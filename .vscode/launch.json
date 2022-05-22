@@ -5,13 +5,13 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "type": "pwa-node",
-            "request": "launch",
-            "name": "Launch Program",
-            "skipFiles": [
-                "<node_internals>/**"
-            ],
-            "program": "${workspaceFolder}/app.js"
+          "name": "Launch app.js",
+          "program": "${workspaceFolder}/app.js",
+          "request": "launch",
+          "skipFiles": [
+            "<node_internals>/**"
+          ],
+          "type": "node"
         }
     ]
 }

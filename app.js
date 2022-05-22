@@ -3,7 +3,7 @@ require("dotenv").config()
 const SHODAN_TOKEN = process.env.SHODAN_TOKEN
 const CLIENT_ID = process.env.CLIENT_ID
 const GUILD_ID = process.env.GUILD_ID
-const CLIENT_SCRET = process.env.GUILD_ID
+const CLIENT_SCRET = process.env.CLIENT_SECRET
 
 const { REST } = require('@discordjs/rest');
 const { Routes } = require('discord-api-types/v9');
