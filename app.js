@@ -68,6 +68,9 @@ const commands = [
         .setDescription("The message you want to echo.")
         .setRequired(true)
     ),
+  new SlashCommandBuilder()
+    .setName("help")
+    .setDescription("Lists all commands."),
 ];
 //#endregion
 
@@ -175,6 +178,22 @@ client.on(`interactionCreate`, async (interaction) => {
       });
     if (exampleEmbed === `undefined`) return;
     await interaction.reply({ embeds: [exampleEmbed] });
+  }
+
+  if(interaction.commandName === `help`) {
+    const embed = new MessageEmbed()
+      .setTitle(`Help`)
+      .setDescription(`List of all commands:`)
+      .setColor(`#15999f`)
+      .setAuthor({
+        name: `${client.user.tag}`,
+        iconURL: `${client.user.displayAvatarURL()}`,
+        url: `${client.user.displayAvatarURL()}`,
+      })
+    for (const command of commands) {
+      embed.addField(command.name, command.description);
+    }
+    await interaction.reply({ embeds: [embed] });
   }
 });
 
