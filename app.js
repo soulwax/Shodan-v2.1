@@ -70,11 +70,11 @@ const commands = [
   new SlashCommandBuilder()
     .setName('help')
     .setDescription('Lists all commands.'),
-]
+];
 //#endregion
 
 //#region REFRESH
-;(async () => {
+(async () => {
   try {
     console.log(`Started refreshing application (/) commands.`)
 
