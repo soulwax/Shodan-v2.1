@@ -6,7 +6,7 @@
   "main": "app.js",
   "scripts": {
     "start": "npm start app.js",
-    "pm2": "pm2 start app.js --node-args=\"--inspect --inspect-port=9229\""
+    "pm2": "pm2 start app.js --node-args=\"--inspect --inspect-port=7000\""
   },
   "dependencies": {
     "@discordjs/rest": "^0.4.1",
