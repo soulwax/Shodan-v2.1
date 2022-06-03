@@ -18,7 +18,6 @@ const { Client } = require(`discord.js`)
 const rest = new REST({ version: `9` }).setToken(SHODAN_TOKEN)
 const client = new Client({
   intents: [
-    ,
     `GUILDS`,
     `GUILD_MESSAGES`,
     `GUILD_PRESENCES`,
