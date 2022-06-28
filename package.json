@@ -6,6 +6,7 @@
   "main": "app.js",
   "scripts": {
     "start": "npm start app.js",
+    "debug": "nodemon --inspect=7002 app.js",
     "pm2": "pm2 start app.js --node-args=\"--inspect --inspect-port=7000\""
   },
   "dependencies": {

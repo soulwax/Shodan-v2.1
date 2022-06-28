@@ -21,6 +21,12 @@
         "<node_internals>/**"
       ],
       "type": "node"
+    },
+    {
+      "command": "nodemon --inspect=9229 ${workspaceFolder}/app.js",
+      "name": "nodemon",
+      "request": "launch",
+      "type": "node-terminal"
     }
   ]
 }

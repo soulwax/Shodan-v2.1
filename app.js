@@ -67,13 +67,16 @@ const commands = [
         .setRequired(true)
     ),
   new SlashCommandBuilder()
+    .setName('join')
+    .setDescription('Joins a voice channel.'),
+  new SlashCommandBuilder()
     .setName('help')
     .setDescription('Lists all commands.'),
-]
+];
 //#endregion
 
 //#region REFRESH
-;(async () => {
+(async () => {
   try {
     console.log(`Started refreshing application (/) commands.`)
 
@@ -199,7 +202,7 @@ client.on(`interactionCreate`, async (interaction) => {
 client.on(`interactionCreate`, async (interaction) => {
   if (interaction.commandName === `join`) {
     const voiceChannel = interaction.guild.channels.cache.find(
-      (channel) => channel.type === `voice`
+      (channel) => channel.type === `GUILD_VOICE`
     )
     if (!voiceChannel) {
       const embed = new MessageEmbed()
@@ -208,7 +211,19 @@ client.on(`interactionCreate`, async (interaction) => {
         .setColor(`#ff0000`)
       await interaction.reply({ embeds: [embed] })
     } else {
-      await voiceChannel.join()
+      // Join voiceChannel
+      if(voiceChannel.joinable) {
+        try {
+          await voiceChannel.join()
+        } catch (error) {
+          console.error(error)
+          const embed = new MessageEmbed()
+          .setTitle(`Error`)
+          .setDescription(`I couldn't join the voice channel.`)
+          .setColor(`#ff0000`)
+          await interaction.reply({ embeds: [embed] })
+        }
+      }
     }
   }
 })
