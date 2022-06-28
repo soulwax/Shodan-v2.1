@@ -195,4 +195,22 @@ client.on(`interactionCreate`, async (interaction) => {
   }
 })
 
+// Join voice chat when called the /join command
+client.on(`interactionCreate`, async (interaction) => {
+  if (interaction.commandName === `join`) {
+    const voiceChannel = interaction.guild.channels.cache.find(
+      (channel) => channel.type === `voice`
+    )
+    if (!voiceChannel) {
+      const embed = new MessageEmbed()
+        .setTitle(`Error`)
+        .setDescription(`I couldn't find a voice channel.`)
+        .setColor(`#ff0000`)
+      await interaction.reply({ embeds: [embed] })
+    } else {
+      await voiceChannel.join()
+    }
+  }
+})
+
 client.login(SHODAN_TOKEN)
