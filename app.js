@@ -4,6 +4,7 @@
 require(`dotenv`).config()
 const SHODAN_TOKEN = process.env.SHODAN_TOKEN
 const CLIENT_ID = process.env.CLIENT_ID
+const TRACKING_CHANNEL_NAME = process.env.TRACKING_CHANNEL_NAME
 //#endregion
 
 //#region REQUIRES
@@ -12,6 +13,8 @@ const { SlashCommandBuilder } = require(`@discordjs/builders`)
 const { REST } = require(`@discordjs/rest`)
 const { Routes } = require(`discord-api-types/v9`)
 const { Client } = require(`discord.js`)
+
+const InvitesTracker = require('@androz2091/discord-invites-tracker')
 //#endregion
 
 //#region REST + CLIENT API + INTENTS
@@ -201,9 +204,14 @@ client.on(`interactionCreate`, async (interaction) => {
 // Join voice chat when called the /join command
 client.on(`interactionCreate`, async (interaction) => {
   if (interaction.commandName === `join`) {
-    const voiceChannel = interaction.guild.channels.cache.find(
-      (channel) => channel.type === `GUILD_VOICE`
-    )
+    // Get the voice channel the user is currently in
+    const voiceChannel = interaction.member.voice.channel
+    const embed = new MessageEmbed()
+      .setTitle(`You want me to join a voice channel?`)
+      .setDescription(`Let me join ${voiceChannel.name}!`)
+      .setColor(`#0099ff`)
+    await interaction.reply({ embeds: [embed] })
+
     if (!voiceChannel) {
       const embed = new MessageEmbed()
         .setTitle(`Error`)
@@ -212,20 +220,50 @@ client.on(`interactionCreate`, async (interaction) => {
       await interaction.reply({ embeds: [embed] })
     } else {
       // Join voiceChannel
-      if(voiceChannel.joinable) {
-        try {
-          await voiceChannel.join()
-        } catch (error) {
-          console.error(error)
+      if (voiceChannel.joinable) {
+        // Enter voice channel
+        await voiceChannel.join().then(async (connection) => {
           const embed = new MessageEmbed()
-          .setTitle(`Error`)
-          .setDescription(`I couldn't join the voice channel.`)
-          .setColor(`#ff0000`)
+            .setTitle(`Success`)
+            .setDescription(`I joined ${voiceChannel.name}!`)
+            .setColor(`#0099ff`)
           await interaction.reply({ embeds: [embed] })
-        }
+        }).catch(async (error) => {
+          const embed = new MessageEmbed()
+            .setTitle(`Error`)
+            .setDescription(`I couldn't join ${voiceChannel.name}.`)
+            .setColor(`#ff0000`)
+          await interaction.reply({ embeds: [embed] })
+        })
       }
     }
   }
 })
+
+//#region TRACKER
+const tracker = InvitesTracker.init(client, {
+  fetchGuilds: true,
+  fetchVanity: true,
+  fetchAuditLogs: true,
+})
+
+tracker.on('guildMemberAdd', (member, type, invite) => {
+  const adminGeneral = member.guild.channels.cache.find(
+    (ch) => ch.name === `${TRACKING_CHANNEL_NAME}`
+  )
+
+  if (type === 'normal') {
+    adminGeneral.send(`${member} was invited by: ${invite.inviter.username}!`)
+  } else if (type === 'vanity') {
+    adminGeneral.send(`${member} joined using a custom invite.`)
+  } else if (type === 'permissions') {
+    adminGeneral.send(
+      `I can't figure out how ${member} joined because I don't have the "Manage Server" permission.`
+    )
+  } else if (type === 'unknown') {
+    adminGeneral.send(`I can't figure out how ${member} joined the server...`)
+  }
+})
+//#endregion
 
 client.login(SHODAN_TOKEN)

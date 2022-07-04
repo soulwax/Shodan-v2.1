@@ -10,6 +10,7 @@
     "pm2": "pm2 start app.js --node-args=\"--inspect --inspect-port=7000\""
   },
   "dependencies": {
+    "@androz2091/discord-invites-tracker": "^1.1.1",
     "@discordjs/rest": "^0.4.1",
     "@discordjs/voice": "^0.9.0",
     "bufferutil": "^4.0.6",
@@ -19,7 +20,6 @@
     "utf-8-validate": "^5.0.9"
   },
   "description": "A multi purpose, feature on demand, private bot for private purposes.",
-  "devDependencies": {},
   "repository": {
     "type": "git",
     "url": "git+https://github.com/soulwax/Shodan-v2.1.git"
