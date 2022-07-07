@@ -5,7 +5,6 @@ require(`dotenv`).config()
 const SHODAN_TOKEN = process.env.SHODAN_TOKEN
 const CLIENT_ID = process.env.CLIENT_ID
 const TRACKING_CHANNEL_NAME = process.env.TRACKING_CHANNEL_NAME
-const SECONDARY_TRACKING_CHANNEL_NAME = process.env.SECONDARY_TRACKING_CHANNEL_NAME
 //#endregion
 
 //#region REQUIRES
@@ -14,7 +13,6 @@ const { SlashCommandBuilder } = require(`@discordjs/builders`)
 const { REST } = require(`@discordjs/rest`)
 const { Routes } = require(`discord-api-types/v9`)
 const { Client } = require(`discord.js`)
-const moment = require('moment');
 
 const InvitesTracker = require('@androz2091/discord-invites-tracker')
 //#endregion
