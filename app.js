@@ -5,6 +5,7 @@ require(`dotenv`).config()
 const SHODAN_TOKEN = process.env.SHODAN_TOKEN
 const CLIENT_ID = process.env.CLIENT_ID
 const TRACKING_CHANNEL_NAME = process.env.TRACKING_CHANNEL_NAME
+const SECONDARY_TRACKING_CHANNEL_NAME = process.env.SECONDARY_TRACKING_CHANNEL_NAME
 //#endregion
 
 //#region REQUIRES
@@ -13,6 +14,7 @@ const { SlashCommandBuilder } = require(`@discordjs/builders`)
 const { REST } = require(`@discordjs/rest`)
 const { Routes } = require(`discord-api-types/v9`)
 const { Client } = require(`discord.js`)
+const moment = require('moment');
 
 const InvitesTracker = require('@androz2091/discord-invites-tracker')
 //#endregion
@@ -75,6 +77,9 @@ const commands = [
   new SlashCommandBuilder()
     .setName('help')
     .setDescription('Lists all commands.'),
+  new SlashCommandBuilder()
+    .setName('banned')
+    .setDescription('Lists banned users.'),
 ];
 //#endregion
 
@@ -152,6 +157,17 @@ client.on(`interactionCreate`, async (interaction) => {
         .setColor(`#0099ff`)
       await interaction.reply({ embeds: [embed] })
     }
+  }
+
+  if (interaction.commandName === `banned`) {
+    const guild = interaction.guild
+    const bans = await guild.bans.fetch()
+    const list = bans.map((ban) => ban.user.tag).join(`\n`)
+    const embed = new MessageEmbed()
+      .setTitle(`${guild.name}'s Bans`)
+      .setDescription(list)
+      .setColor(`#0099ff`)
+    await interaction.reply({ embeds: [embed] })
   }
 
   // TODO: remove this example command
@@ -252,16 +268,32 @@ tracker.on('guildMemberAdd', (member, type, invite) => {
     (ch) => ch.name === `${TRACKING_CHANNEL_NAME}`
   )
 
+  // Get accurate age of account in days
+  const accountAge = Math.floor(
+    (Date.now() - member.user.createdAt) / (1000 * 60 * 60 * 24)
+  )
+  
+  let accountAgeString = '';
+  // if accountAge has three digits, convert to months
+  if (accountAge > 99) {
+    const accountAgeMonths = Math.floor(accountAge / 30)
+    const accountAgeDays = Math.floor(accountAge % 30)
+    accountAgeString = `${accountAgeMonths} months, ${accountAgeDays} days ago`
+  } else {
+    accountAgeString = `${accountAge} days ago`
+  }
+
+
   if (type === 'normal') {
-    adminGeneral.send(`${member} was invited by: ${invite.inviter.username}!`)
+    adminGeneral.send(`${member} was invited by: ${invite.inviter.username}! Account created: ${accountAgeString}`)
   } else if (type === 'vanity') {
-    adminGeneral.send(`${member} joined using a custom invite.`)
+    adminGeneral.send(`${member} joined using a custom invite. Account age: ${accountAgeString}`)
   } else if (type === 'permissions') {
     adminGeneral.send(
-      `I can't figure out how ${member} joined because I don't have the "Manage Server" permission.`
+      `I can't figure out how ${member} joined because I don't have the "Manage Server" permission. Account created: ${accountAgeString}.`
     )
   } else if (type === 'unknown') {
-    adminGeneral.send(`I can't figure out how ${member} joined the server...`)
+    adminGeneral.send(`I can't figure out how ${member} joined the server... Account created: ${accountAgeString}`)
   }
 })
 //#endregion
