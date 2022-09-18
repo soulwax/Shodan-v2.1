@@ -1,6 +1,5 @@
 // All solutions below work with discord.js@13.7.0
-const fs = require('node:fs')
-const path = require('node:path')
+
 //#region ENVIRONMENT VARIABLES
 require(`dotenv`).config()
 const SHODAN_TOKEN = process.env.SHODAN_TOKEN
@@ -9,6 +8,8 @@ const TRACKING_CHANNEL_NAME = process.env.TRACKING_CHANNEL_NAME
 //#endregion
 
 //#region REQUIRES
+const fs = require('node:fs')
+const path = require('node:path')
 const { SlashCommandBuilder, Routes } = require('discord.js')
 const { REST } = require('@discordjs/rest')
 const {
@@ -19,6 +20,8 @@ const {
 const InvitesTracker = require('@androz2091/discord-invites-tracker')
 //#endregion
 
+
+//#region Intents
 IntentBits = {
   GUILDS: 1 << 0,
   GUILD_MEMBERS: 1 << 1,
@@ -41,11 +44,10 @@ IntentBits = {
   AUTO_MODERATION_EXECUTION: 1 << 21
 }
 
-// Iterate over the intents and or them together
 const intents = Object.values(IntentBits).reduce((a, b) => a | b, 0)
+//#endregion
 
 //#region REST + CLIENT API + INTENTS
-
 const rest = new REST({ version: '10' }).setToken(SHODAN_TOKEN)
 
 const client = new Client({
@@ -76,7 +78,6 @@ for (const file of commandFiles) {
     console.error(error)
   }
 })()
-
 
 client.on(`interactionCreate`, async (interaction) => {
   if (!interaction.isCommand()) return
