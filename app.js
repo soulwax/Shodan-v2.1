@@ -86,7 +86,7 @@ client.on(`interactionCreate`, async (interaction) => {
     // await command.execute(interaction)
         const ping = Date.now() - interaction.createdTimestamp.valueOf()
         const embed = new EmbedBuilder()
-          .setTitle(`Pong Motherfucker!`)
+          .setTitle(`Pong!`)
           .setDescription(`${ping}ms`)
           .setColor(`#00ffab`)
         await interaction.reply({ embeds: [embed] })
