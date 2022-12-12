@@ -6,8 +6,8 @@
   "main": "app.js",
   "scripts": {
     "start": "npm start app.js",
-    "debug": "nodemon --inspect=7002 app.js",
-    "pm2": "pm2 start app.js --node-args=\"--inspect --inspect-port=7002\" --name=Shodan"
+    "debug": "nodemon --inspect=9229 app.js",
+    "pm2": "pm2 start app.js --node-args=\"--inspect --inspect-port=9229\" --name=Shodan"
   },
   "dependencies": {
     "@androz2091/discord-invites-tracker": "^1.1.1",
