@@ -5,6 +5,7 @@ require(`dotenv`).config()
 const SHODAN_TOKEN = process.env.SHODAN_TOKEN
 const CLIENT_ID = process.env.CLIENT_ID
 const TRACKING_CHANNEL_NAME = process.env.TRACKING_CHANNEL_NAME
+const SHODAN_API = process.env.SHODAN_API
 //#endregion
 
 //#region REQUIRES
@@ -59,7 +60,7 @@ setServer.client.on(`interactionCreate`, async (interaction) => {
 
     options = {
       method: 'GET',
-      url: 'https://api.shodan.io/shodan/host/54.38.153.162?key=ThjsmwiKkfCDLh0nnvybWV6MwW7gHz0V',
+      url: 'https://api.shodan.io/shodan/host/'+String(ipAddress)+'?key='+SHODAN_API,
       headers: {
         "Accept-Encoding": "gzip,deflate,compress"
       }
@@ -76,8 +77,6 @@ setServer.client.on(`interactionCreate`, async (interaction) => {
     }).catch(function (error) {
       console.error(error);
     });
-
-
 
   }
   if (interaction.commandName === `ping`) {
