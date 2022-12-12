@@ -83,6 +83,13 @@ function errorJoinVoiceChannel(voiceChannelName) {
     .setColor(`#ff0000`)
 }
 
+function searchIpResp(data) {
+  return new EmbedBuilder()
+    .setTitle(`IP-INFO`)
+    .setDescription(data)
+    .setColor(`#ff0000`)
+}
+
 module.exports = {
   errNoVoiceChannel,
   AskToJoinVoiceChannel,
@@ -94,5 +101,6 @@ module.exports = {
   bannedList,
   allCommands,
   successJoinVoiceChannel,
-  errorJoinVoiceChannel
+  errorJoinVoiceChannel,
+  searchIpResp
 }

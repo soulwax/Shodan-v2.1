@@ -18,12 +18,10 @@ const {
   GatewayIntentBits,
 } = require(`discord.js`);
 const InvitesTracker = require('@androz2091/discord-invites-tracker');
-
 const responseTemplates = require('./embeds'); // discord embed messages
 const setServer = require('./server-setup/setup-server'); // client, tracker, rest setup
-
 const { joinVoiceChannel, VoiceConnectionStatus, createAudioPlayer, createAudioResource } = require('@discordjs/voice');
-
+const axios = require('axios');
 
 //#endregion
 
@@ -35,6 +33,7 @@ const commandFiles = fs
 
 for (const file of commandFiles) {
   const command = require(`./commands/${file}`)
+  console.log(command)
   commands.push(command.data.toJSON())
 }
 
@@ -54,6 +53,33 @@ for (const file of commandFiles) {
 
 setServer.client.on(`interactionCreate`, async (interaction) => {
   if (!interaction.isCommand()) return
+  console.log(interaction.commandName)
+  if (interaction.commandName === `searchip`) {
+    let ipAddress = interaction.options.getString(`ip`)
+
+    options = {
+      method: 'GET',
+      url: 'https://api.shodan.io/shodan/host/54.38.153.162?key=ThjsmwiKkfCDLh0nnvybWV6MwW7gHz0V',
+      headers: {
+        "Accept-Encoding": "gzip,deflate,compress"
+      }
+    };
+
+    await axios.request(options).then(async (response) => {
+      let data = {
+        city: response.data.city
+      }
+      console.log(response.status);
+      console.log(response.data);
+      const embed = responseTemplates.searchIpResp(JSON.stringify(data))
+      await interaction.reply({ embeds: [embed] })
+    }).catch(function (error) {
+      console.error(error);
+    });
+
+
+
+  }
   if (interaction.commandName === `ping`) {
     // get command from interaction, then execute it's own async function
     // const command = await commands.find((cmd) => cmd.name === interaction.commandName)
@@ -182,6 +208,7 @@ setServer.client.on(`interactionCreate`, async (interaction) => {
 
 //#region TRACKER
 
+// users joining on the discord server
 setServer.tracker.on('guildMemberAdd', (member, type, invite) => {
   console.log('guildMemberAdd')
   const adminGeneral = member.guild.channels.cache.find(
