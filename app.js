@@ -16,43 +16,12 @@ const {
   Client,
   EmbedBuilder,
   GatewayIntentBits,
-} = require(`discord.js`)
-const InvitesTracker = require('@androz2091/discord-invites-tracker')
-//#endregion
+} = require(`discord.js`);
+const InvitesTracker = require('@androz2091/discord-invites-tracker');
 
+const responseTemplates = require('./embeds'); // discord embed messages
+const setServer = require('./server-setup/setup-server'); // client, tracker, rest setup
 
-//#region Intents
-IntentBits = {
-  GUILDS: 1 << 0,
-  GUILD_MEMBERS: 1 << 1,
-  GUILD_BANS: 1 << 2,
-  GUILD_EMOJIS_AND_STICKERS: 1 << 3,
-  GUILD_INTEGRATIONS: 1 << 4,
-  GUILD_WEBHOOKS: 1 << 5,
-  GUILD_INVITES: 1 << 6,
-  GUILD_VOICE_STATES: 1 << 7,
-  GUILD_PRESENCES: 1 << 8,
-  GUILD_MESSAGES: 1 << 9,
-  GUILD_MESSAGE_REACTIONS: 1 << 10,
-  GUILD_MESSAGE_TYPING: 1 << 11,
-  DIRECT_MESSAGES: 1 << 12,
-  DIRECT_MESSAGE_REACTIONS: 1 << 13,
-  DIRECT_MESSAGE_TYPING: 1 << 14,
-  MESSAGE_CONTENT: 1 << 15,
-  GUILD_SCHEDULED_EVENTS: 1 << 16,
-  AUTO_MODERATION_CONFIGURATION: 1 << 20,
-  AUTO_MODERATION_EXECUTION: 1 << 21
-}
-
-const intents = Object.values(IntentBits).reduce((a, b) => a | b, 0)
-//#endregion
-
-//#region REST + CLIENT API + INTENTS
-const rest = new REST({ version: '10' }).setToken(SHODAN_TOKEN)
-
-const client = new Client({
-  intents: intents
-})
 //#endregion
 
 //#region COMMANDS
@@ -65,12 +34,13 @@ for (const file of commandFiles) {
   const command = require(`./commands/${file}`)
   commands.push(command.data.toJSON())
 }
+
 //#endregion COMMANDS
 
 (async () => {
   try {
     console.log(`Started refreshing application (/) commands.`)
-    rest.put(Routes.applicationCommands(CLIENT_ID), { body: commands })
+    setServer.rest.put(Routes.applicationCommands(CLIENT_ID), { body: commands })
       .then(console.log(`Successfully reloaded application (/) commands. 
         Registered ${commands.length} commands.`))
 
@@ -79,24 +49,18 @@ for (const file of commandFiles) {
   }
 })()
 
-client.on(`interactionCreate`, async (interaction) => {
+setServer.client.on(`interactionCreate`, async (interaction) => {
   if (!interaction.isCommand()) return
   if (interaction.commandName === `ping`) {
     // get command from interaction, then execute it's own async function
     // const command = await commands.find((cmd) => cmd.name === interaction.commandName)
     // await command.execute(interaction)
         const ping = Date.now() - interaction.createdTimestamp.valueOf()
-        const embed = new EmbedBuilder()
-          .setTitle(`Pong!`)
-          .setDescription(`${ping}ms`)
-          .setColor(`#00ffab`)
+        const embed = responseTemplates.pong(ping)
         await interaction.reply({ embeds: [embed] })
   }
   if (interaction.commandName === `echo`) {
-    const embed = new EmbedBuilder()
-      .setTitle(`Echo`)
-      .setDescription(interaction.options.getString(`message`))
-      .setColor(`#00ff00`)
+    const embed = responseTemplates.echoResponse(String(interaction.options.getString(`message`)))
     await interaction.reply({ embeds: [embed] })
   }
 
@@ -104,10 +68,7 @@ client.on(`interactionCreate`, async (interaction) => {
     const guild = interaction.guild
     const members = await guild.members.fetch()
     const memberList = members.map((member) => member.user.tag).join(`\n`)
-    const embed = new EmbedBuilder()
-      .setTitle(`${guild.name}'s Members`)
-      .setDescription(memberList)
-      .setColor(`#0099ff`)
+    const embed = responseTemplates.membersList(guild.name, memberList)
     await interaction.reply({ embeds: [embed] })
   }
 
@@ -120,17 +81,10 @@ client.on(`interactionCreate`, async (interaction) => {
 
     if (!user || !userName || !userAvatar) {
       //send error embed message
-      const embed = new EmbedBuilder()
-        .setTitle(`Error`)
-        .setDescription(`Please mention a user.`)
-        .setColor(`#ff0000`)
+      const embed = responseTemplates.errMentionUser()
       await interaction.reply({ embeds: [embed] })
     } else {
-      const embed = new EmbedBuilder()
-        .setTitle(`${userName}'s Avatar`)
-        .setDescription(`[Link to avatar](${userAvatar})`)
-        .setImage(userAvatar)
-        .setColor(`#0099ff`)
+      const embed = responseTemplates.showAvatar(userName, userAvatar)
       await interaction.reply({ embeds: [embed] })
     }
   }
@@ -139,53 +93,12 @@ client.on(`interactionCreate`, async (interaction) => {
     const guild = interaction.guild
     const bans = await guild.bans.fetch()
     const list = bans.map((ban) => ban.user.tag).join(`\n`)
-    const embed = new EmbedBuilder()
-      .setTitle(`${guild.name}'s Bans`)
-      .setDescription(list)
-      .setColor(`#0099ff`)
+    const embed = responseTemplates.bannedList(guild.name, list)  // create banned list embed
     await interaction.reply({ embeds: [embed] })
   }
 
-  // TODO: remove this example command
-  if (interaction.commandName === `example`) {
-    const exampleEmbed = new EmbedBuilder()
-      .setColor(`#0099ff`)
-      .setTitle(`Some title`)
-      .setURL(`https://discord.js.org/`)
-      .setAuthor({
-        name: `Some name`,
-        iconURL: `https://i.imgur.com/AfFp7pu.png`,
-        url: `https://discord.js.org`
-      })
-      .setDescription(`Some description here`)
-      .setThumbnail(`https://i.imgur.com/AfFp7pu.png`)
-      .addFields(
-        { name: `Regular field title`, value: `Some value here` },
-        { name: `\u200B`, value: `\u200B` },
-        { name: `Inline field title`, value: `Some value here`, inline: true },
-        { name: `Inline field title`, value: `Some value here`, inline: true }
-      )
-      .addField(`Inline field title`, `Some value here`, true)
-      .setImage(`https://i.imgur.com/AfFp7pu.png`)
-      .setTimestamp()
-      .setFooter({
-        text: `Some footer text here`,
-        iconURL: `https://i.imgur.com/AfFp7pu.png`
-      })
-    if (exampleEmbed === `undefined`) return
-    await interaction.reply({ embeds: [exampleEmbed] })
-  }
-
   if (interaction.commandName === `help`) {
-    const embed = new EmbedBuilder()
-      .setTitle(`Help`)
-      .setDescription(`List of all commands:`)
-      .setColor(`#15999f`)
-      .setAuthor({
-        name: `${client.user.tag}`,
-        iconURL: `${client.user.displayAvatarURL()}`,
-        url: `${client.user.displayAvatarURL()}`
-      })
+    const embed = responseTemplates.allCommands(client.user.tag, client.user.displayAvatarURL())
     for (const command of commands) {
       embed.addField(command.name, command.description)
     }
@@ -194,7 +107,7 @@ client.on(`interactionCreate`, async (interaction) => {
 })
 
 // Nuke command
-client.on('interactionCreate', async (interaction) => {
+setServer.client.on('interactionCreate', async (interaction) => {
   if (!interaction.isCommand()) return
   if (interaction.commandName === 'nuke') {
     const amount = interaction.options.getInteger('amount')
@@ -212,55 +125,55 @@ client.on('interactionCreate', async (interaction) => {
 })
 
 // Join voice chat when called the /join command
-client.on(`interactionCreate`, async (interaction) => {
+setServer.client.on(`interactionCreate`, async (interaction) => {
   if (interaction.commandName === `join`) {
     // Get the voice channel the user is currently in
     const voiceChannel = interaction.member.voice.channel
-    const embed = new EmbedBuilder()
-      .setTitle(`You want me to join a voice channel?`)
-      .setDescription(`Let me join ${voiceChannel.name}!`)
-      .setColor(`#0099ff`)
+    const embed = responseTemplates.AskToJoinVoiceChannel(voiceChannel.name)
     await interaction.reply({ embeds: [embed] })
 
     if (!voiceChannel) {
-      const embed = new EmbedBuilder()
-        .setTitle(`Error`)
-        .setDescription(`I couldn't find a voice channel.`)
-        .setColor(`#ff0000`)
+      const embed = responseTemplates.errNoVoiceChannel()
       await interaction.reply({ embeds: [embed] })
     } else {
       // Join voiceChannel
       if (voiceChannel.joinable) {
         // Enter voice channel
-        await voiceChannel
+        const { joinVoiceChannel, VoiceConnectionStatus } = require('@discordjs/voice');
+
+        const connection = joinVoiceChannel({
+          channelId: interaction.id,
+          guildId: interaction.guild.id,
+          adapterCreator: interaction.guild.voiceAdapterCreator
+        });
+        //console.log(connection)
+        connection.on(VoiceConnectionStatus.Ready, () => {
+          console.log('The connection has entered the Ready state - ready to play audio!');
+        });
+
+        /*await voiceChannel
           .join()
           .then(async (connection) => {
-            const embed = new EmbedBuilder()
-              .setTitle(`Success`)
-              .setDescription(`I joined ${voiceChannel.name}!`)
-              .setColor(`#0099ff`)
+            console.log('connection')
+            console.log(connection)
+            const embed = responseTemplates.successJoinVoiceChannel(voiceChannel.name)
             await interaction.reply({ embeds: [embed] })
           })
           .catch(async (error) => {
-            const embed = new EmbedBuilder()
-              .setTitle(`Error`)
-              .setDescription(`I couldn't join ${voiceChannel.name}.`)
-              .setColor(`#ff0000`)
+            console.log('error')
+            console.log(error)
+            const embed = responseTemplates.errorJoinVoiceChannel(voiceChannel.name)
             await interaction.reply({ embeds: [embed] })
-          })
+          })*/
       }
     }
   }
 })
 
 //#region TRACKER
-const tracker = InvitesTracker.init(client, {
-  fetchGuilds: true,
-  fetchVanity: true,
-  fetchAuditLogs: true
-})
 
-tracker.on('guildMemberAdd', (member, type, invite) => {
+setServer.tracker.on('guildMemberAdd', (member, type, invite) => {
+  console.log('guildMemberAdd')
   const adminGeneral = member.guild.channels.cache.find(
     (ch) => ch.name === `${TRACKING_CHANNEL_NAME}`
   )
@@ -300,8 +213,8 @@ tracker.on('guildMemberAdd', (member, type, invite) => {
 })
 //#endregion
 
-client.on(`ready`, () => {
-  console.log(`Logged in as ${client.user.tag}!`)
+setServer.client.on(`ready`, () => {
+  console.log(`Logged in as ${setServer.client.user.tag}!`)
 })
 
-client.login(SHODAN_TOKEN)
+setServer.client.login(SHODAN_TOKEN)
