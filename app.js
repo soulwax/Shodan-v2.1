@@ -183,6 +183,36 @@ setServer.client.on(`interactionCreate`, async (interaction) => {
   }
 })
 
+// Leave voice chat when called the /leave command
+setServer.client.on(`interactionCreate`, async (interaction) => {
+  if (interaction.commandName === `leave`) {
+    // Get the voice channel the user is currently in
+    const voiceChannel = interaction.member.voice.channel
+    const embed = responseTemplates.AskToLeaveVoiceChannel(voiceChannel.name)
+    await interaction.reply({ embeds: [embed] })
+
+    if (!voiceChannel) {
+      const embed = responseTemplates.errNoVoiceChannel()
+      await interaction.reply({ embeds: [embed] })
+    } else {
+      // Leave voiceChannel
+      if (voiceChannel.joinable) {
+        await voiceChannel
+          .leave()
+          .then(async (connection) => {
+            const embed = responseTemplates.successLeaveVoiceChannel(voiceChannel.name)
+            await interaction.reply({ embeds: [embed] })
+          })
+          .catch(async (error) => {
+            const embed = responseTemplates.errorLeaveVoiceChannel(voiceChannel.name)
+            await interaction.reply({ embeds: [embed] })
+          })
+      }
+    }
+  }
+})
+
+
 //#region TRACKER
 
 setServer.tracker.on('guildMemberAdd', (member, type, invite) => {
