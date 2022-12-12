@@ -187,7 +187,10 @@ client.on(`interactionCreate`, async (interaction) => {
         url: `${client.user.displayAvatarURL()}`
       })
     for (const command of commands) {
-      embed.addField(command.name, command.description)
+      embed.addFields({
+        name: `${command.name}`,
+        value: `${command.description}`
+      })
     }
     await interaction.reply({ embeds: [embed] })
   }
