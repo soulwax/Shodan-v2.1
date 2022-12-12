@@ -22,6 +22,9 @@ const InvitesTracker = require('@androz2091/discord-invites-tracker');
 const responseTemplates = require('./embeds'); // discord embed messages
 const setServer = require('./server-setup/setup-server'); // client, tracker, rest setup
 
+const { joinVoiceChannel, VoiceConnectionStatus, createAudioPlayer, createAudioResource } = require('@discordjs/voice');
+
+
 //#endregion
 
 //#region COMMANDS
@@ -124,6 +127,13 @@ setServer.client.on('interactionCreate', async (interaction) => {
   }
 })
 
+
+setServer.client.on(VoiceConnectionStatus.Ready, () => {
+  console.log('The connection has entered the Ready state - ready to play audio!');
+});
+
+
+
 // Join voice chat when called the /join command
 setServer.client.on(`interactionCreate`, async (interaction) => {
   if (interaction.commandName === `join`) {
@@ -139,18 +149,18 @@ setServer.client.on(`interactionCreate`, async (interaction) => {
       // Join voiceChannel
       if (voiceChannel.joinable) {
         // Enter voice channel
-        const { joinVoiceChannel, VoiceConnectionStatus } = require('@discordjs/voice');
-
         const connection = joinVoiceChannel({
           channelId: interaction.id,
           guildId: interaction.guild.id,
           adapterCreator: interaction.guild.voiceAdapterCreator
         });
-        //console.log(connection)
-        connection.on(VoiceConnectionStatus.Ready, () => {
-          console.log('The connection has entered the Ready state - ready to play audio!');
-        });
+        console.log(connection)
 
+        const player = createAudioPlayer();
+        const subscription = connection.subscribe(player);
+
+        const resource = createAudioResource('test.mp3');
+        player.play(resource);
         /*await voiceChannel
           .join()
           .then(async (connection) => {
