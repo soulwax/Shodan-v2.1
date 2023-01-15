@@ -88,6 +88,10 @@ function searchIpResp(data) {
     .setTitle(`IP-INFO`)
     .setDescription(data)
     .setColor(`#ff0000`)
+    .addFields({
+      name: 'City',
+      value: `\`${data}\``
+    })
 }
 
 module.exports = {
