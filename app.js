@@ -52,6 +52,13 @@ for (const file of commandFiles) {
   }
 })()
 
+// "message" event
+setServer.client.on('messageCreate', message => {
+  // This function is executed each time your bot sees a message
+  // in a server OR DM!
+  console.log(JSON.stringify(message))
+  });
+
 setServer.client.on(`interactionCreate`, async (interaction) => {
   if (!interaction.isCommand()) return
   console.log(interaction.commandName)
@@ -72,7 +79,8 @@ setServer.client.on(`interactionCreate`, async (interaction) => {
       }
       console.log(response.status);
       console.log(response.data);
-      const embed = responseTemplates.searchIpResp(JSON.stringify(data))
+      console.log(data)
+      const embed = responseTemplates.searchIpResp(data.city)
       await interaction.reply({ embeds: [embed] })
     }).catch(function (error) {
       console.error(error);
