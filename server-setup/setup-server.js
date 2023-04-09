@@ -1,7 +1,5 @@
 const {
-  Client,
-  EmbedBuilder,
-  GatewayIntentBits,
+  Client
 } = require(`discord.js`);
 const { REST } = require('@discordjs/rest')
 require(`dotenv`).config()
@@ -9,7 +7,7 @@ const SHODAN_TOKEN = process.env.SHODAN_TOKEN
 const InvitesTracker = require('@androz2091/discord-invites-tracker');
 
 //#region Intents
-IntentBits = {
+const IntentBits = {
   GUILDS: 1 << 0,
   GUILD_MEMBERS: 1 << 1,
   GUILD_BANS: 1 << 2,

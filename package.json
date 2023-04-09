@@ -6,8 +6,8 @@
   "main": "app.js",
   "scripts": {
     "start": "npm start app.js",
-    "debug": "nodemon --inspect=9230 app.js",
-    "pm2": "pm2 start app.js --node-args=\"--inspect --inspect-port=9230 --harmony \" --name=Shodan",
+    "debug": "nodemon --inspect=7500 app.js",
+    "pm2": "pm2 start app.js --node-args=\"--inspect --inspect-port=7500 --harmony \" --name=Shodan",
     "clean": "rm -rf node_modules && rm package-lock.json && rm yarn.lock"
   },
   "dependencies": {

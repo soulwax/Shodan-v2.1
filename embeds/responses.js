@@ -57,6 +57,13 @@ function bannedList(guildName, members) {
     .setColor(`#0099ff`)
 }
 
+function noBans(guildName) {
+  return new EmbedBuilder()
+    .setTitle(`${guildName}'s Bans`)
+    .setDescription(`No bans found.`)
+    .setColor(`#de1042`)
+}
+
 function allCommands(tag, avaURL) {
   return new EmbedBuilder()
     .setTitle(`Help`)
@@ -85,12 +92,12 @@ function errorJoinVoiceChannel(voiceChannelName) {
 
 function searchIpResp(data) {
   return new EmbedBuilder()
-    .setTitle(`IP-INFO`)
-    .setDescription(data)
-    .setColor(`#ff0000`)
+    .setTitle(`Shodan API`)
+    .setDescription(`Shodan API Response for IP: \`${data.ip}\``)
+    .setColor(`#01de10`)
     .addFields({
       name: 'City',
-      value: `\`${data}\``
+      value: `\`${data.city}\``
     })
 }
 
@@ -103,6 +110,7 @@ module.exports = {
   echoResponse,
   membersList,
   bannedList,
+  noBans,
   allCommands,
   successJoinVoiceChannel,
   errorJoinVoiceChannel,

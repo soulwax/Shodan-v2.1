@@ -11,18 +11,17 @@ const SHODAN_API = process.env.SHODAN_API
 //#region REQUIRES
 const fs = require('node:fs')
 const path = require('node:path')
-const { SlashCommandBuilder, Routes } = require('discord.js')
-const { REST } = require('@discordjs/rest')
+const { Routes } = require('discord.js')
+const { EmbedBuilder } = require(`discord.js`)
+const responseTemplates = require('./embeds') // discord embed messages
+const setServer = require('./server-setup/setup-server') // client, tracker, rest setup
 const {
-  Client,
-  EmbedBuilder,
-  GatewayIntentBits,
-} = require(`discord.js`);
-const InvitesTracker = require('@androz2091/discord-invites-tracker');
-const responseTemplates = require('./embeds'); // discord embed messages
-const setServer = require('./server-setup/setup-server'); // client, tracker, rest setup
-const { joinVoiceChannel, VoiceConnectionStatus, createAudioPlayer, createAudioResource } = require('@discordjs/voice');
-const axios = require('axios');
+  joinVoiceChannel,
+  VoiceConnectionStatus,
+  createAudioPlayer,
+  createAudioResource
+} = require('@discordjs/voice')
+const axios = require('axios')
 
 //#endregion
 
@@ -40,24 +39,26 @@ for (const file of commandFiles) {
 
 //#endregion COMMANDS
 
-(async () => {
+;(async () => {
   try {
     console.log(`Started refreshing application (/) commands.`)
-    setServer.rest.put(Routes.applicationCommands(CLIENT_ID), { body: commands })
-      .then(console.log(`Successfully reloaded application (/) commands. 
-        Registered ${commands.length} commands.`))
-
+    setServer.rest
+      .put(Routes.applicationCommands(CLIENT_ID), { body: commands })
+      .then(
+        console.log(`Successfully reloaded application (/) commands. 
+        Registered ${commands.length} commands.`)
+      )
   } catch (error) {
     console.error(error)
   }
 })()
 
 // "message" event
-setServer.client.on('messageCreate', message => {
+setServer.client.on('messageCreate', (message) => {
   // This function is executed each time your bot sees a message
   // in a server OR DM!
   console.log(JSON.stringify(message))
-  });
+})
 
 setServer.client.on(`interactionCreate`, async (interaction) => {
   if (!interaction.isCommand()) return
@@ -67,36 +68,42 @@ setServer.client.on(`interactionCreate`, async (interaction) => {
 
     options = {
       method: 'GET',
-      url: 'https://api.shodan.io/shodan/host/'+String(ipAddress)+'?key='+SHODAN_API,
+      url:
+        'https://api.shodan.io/shodan/host/' +
+        String(ipAddress) +
+        '?key=' +
+        SHODAN_API,
       headers: {
-        "Accept-Encoding": "gzip,deflate,compress"
+        'Accept-Encoding': 'gzip,deflate,compress'
       }
-    };
+    }
 
-    await axios.request(options).then(async (response) => {
-      let data = {
-        city: response.data.city
-      }
-      console.log(response.status);
-      console.log(response.data);
-      console.log(data)
-      const embed = responseTemplates.searchIpResp(data.city)
-      await interaction.reply({ embeds: [embed] })
-    }).catch(function (error) {
-      console.error(error);
-    });
-
+    await axios
+      .request(options)
+      .then(async (response) => {
+        let data = {
+          ip: ipAddress,
+          city: response.data.city
+        }
+        const embed = responseTemplates.searchIpResp(data)
+        await interaction.reply({ embeds: [embed] })
+      })
+      .catch(function (error) {
+        console.error(error)
+      })
   }
   if (interaction.commandName === `ping`) {
     // get command from interaction, then execute it's own async function
     // const command = await commands.find((cmd) => cmd.name === interaction.commandName)
     // await command.execute(interaction)
-        const ping = Date.now() - interaction.createdTimestamp.valueOf()
-        const embed = responseTemplates.pong(ping)
-        await interaction.reply({ embeds: [embed] })
+    const ping = Date.now() - interaction.createdTimestamp.valueOf()
+    const embed = responseTemplates.pong(ping)
+    await interaction.reply({ embeds: [embed] })
   }
   if (interaction.commandName === `echo`) {
-    const embed = responseTemplates.echoResponse(String(interaction.options.getString(`message`)))
+    const embed = responseTemplates.echoResponse(
+      String(interaction.options.getString(`message`))
+    )
     await interaction.reply({ embeds: [embed] })
   }
 
@@ -129,12 +136,20 @@ setServer.client.on(`interactionCreate`, async (interaction) => {
     const guild = interaction.guild
     const bans = await guild.bans.fetch()
     const list = bans.map((ban) => ban.user.tag).join(`\n`)
-    const embed = responseTemplates.bannedList(guild.name, list)  // create banned list embed
-    await interaction.reply({ embeds: [embed] })
+    if (list.length < 1) {
+      const embed = responseTemplates.noBans(guild.name)
+      await interaction.reply({ embeds: [embed] })
+    } else {
+      const embed = responseTemplates.bannedList(guild.name, list) // create banned list embed
+      await interaction.reply({ embeds: [embed] })
+    }
   }
 
   if (interaction.commandName === `help`) {
-    const embed = responseTemplates.allCommands(client.user.tag, client.user.displayAvatarURL())
+    const embed = responseTemplates.allCommands(
+      client.user.tag,
+      client.user.displayAvatarURL()
+    )
     for (const command of commands) {
       embed.addFields({
         name: `${command.name}`,
@@ -163,12 +178,11 @@ setServer.client.on('interactionCreate', async (interaction) => {
   }
 })
 
-
 setServer.client.on(VoiceConnectionStatus.Ready, () => {
-  console.log('The connection has entered the Ready state - ready to play audio!');
-});
-
-
+  console.log(
+    'The connection has entered the Ready state - ready to play audio!'
+  )
+})
 
 // Join voice chat when called the /join command
 setServer.client.on(`interactionCreate`, async (interaction) => {
@@ -189,14 +203,14 @@ setServer.client.on(`interactionCreate`, async (interaction) => {
           channelId: interaction.id,
           guildId: interaction.guild.id,
           adapterCreator: interaction.guild.voiceAdapterCreator
-        });
+        })
         console.log(connection)
 
-        const player = createAudioPlayer();
-        const subscription = connection.subscribe(player);
+        const player = createAudioPlayer()
+        const subscription = connection.subscribe(player)
 
-        const resource = createAudioResource('test.mp3');
-        player.play(resource);
+        const resource = createAudioResource('test.mp3')
+        player.play(resource)
         /*await voiceChannel
           .join()
           .then(async (connection) => {
@@ -233,18 +247,21 @@ setServer.client.on(`interactionCreate`, async (interaction) => {
         await voiceChannel
           .leave()
           .then(async (connection) => {
-            const embed = responseTemplates.successLeaveVoiceChannel(voiceChannel.name)
+            const embed = responseTemplates.successLeaveVoiceChannel(
+              voiceChannel.name
+            )
             await interaction.reply({ embeds: [embed] })
           })
           .catch(async (error) => {
-            const embed = responseTemplates.errorLeaveVoiceChannel(voiceChannel.name)
+            const embed = responseTemplates.errorLeaveVoiceChannel(
+              voiceChannel.name
+            )
             await interaction.reply({ embeds: [embed] })
           })
       }
     }
   }
 })
-
 
 //#region TRACKER
 
