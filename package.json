@@ -3,11 +3,11 @@
   "version": "0.7.3",
   "author": "soulwax",
   "private": true,
-  "main": "app.js",
+  "main": "src/app.js",
   "scripts": {
-    "start": "npm start app.js",
-    "debug": "nodemon --inspect=7500 app.js",
-    "pm2": "pm2 start app.js --node-args=\"--inspect --inspect-port=7500 --harmony \" --name=Shodan",
+    "start": "npm start src/app.js",
+    "debug": "nodemon --inspect=7507 src/app.js",
+    "pm2": "pm2 start src/app.js --node-args=\"--inspect --inspect-port=7507 --harmony \" --name=Shodan",
     "clean": "rm -rf node_modules && rm package-lock.json && rm yarn.lock"
   },
   "dependencies": {
@@ -41,24 +41,5 @@
   "bugs": {
     "url": "https://github.com/soulwax/Shodan-v2.1/issues"
   },
-  "homepage": "https://github.com/soulwax/Shodan-v2.1#readme",
-  "prettier": {
-    "arrowParens": "always",
-    "bracketSameLine": false,
-    "bracketSpacing": true,
-    "embeddedLanguageFormatting": "auto",
-    "htmlWhitespaceSensitivity": "css",
-    "insertPragma": false,
-    "jsxSingleQuote": false,
-    "printWidth": 80,
-    "proseWrap": "preserve",
-    "quoteProps": "as-needed",
-    "requirePragma": false,
-    "semi": false,
-    "singleQuote": true,
-    "tabWidth": 2,
-    "trailingComma": "none",
-    "useTabs": false,
-    "vueIndentScriptAndStyle": false
-  }
+  "homepage": "https://github.com/soulwax/Shodan-v2.1#readme"
 }
