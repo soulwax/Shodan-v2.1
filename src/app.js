@@ -63,7 +63,7 @@ setServer.client.on('messageCreate', (message) => {
 setServer.client.on(`interactionCreate`, async (interaction) => {
   if (!interaction.isCommand()) return
   console.log(interaction.commandName)
-  if (interaction.commandName === `searchip`) {
+  if (interaction.commandName === `ip`) {
     let ipAddress = interaction.options.getString(`ip`)
 
     options = {
