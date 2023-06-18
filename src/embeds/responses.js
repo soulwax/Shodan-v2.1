@@ -90,31 +90,6 @@ function errorJoinVoiceChannel(voiceChannelName) {
     .setColor(`#ff0000`)
 }
 
-function searchIpResp(data) {
-  return new EmbedBuilder()
-    .setTitle(`Shodan API`)
-    .setDescription(`Shodan API Response for IP: \`${data.ip}\``)
-    .setColor(`#01de10`)
-    .addFields({
-      name: 'City',
-      value: `\`${data.city}\``
-    })
-}
-
-function shodanAPIError(data) {
-  return new EmbedBuilder()
-    .setTitle(`Shodan API`)
-    .setDescription(`Shodan API Response for IP: \`${data.ip}\``)
-    .setColor(`#de1042`)
-    .addFields({
-      name: 'Shodan API Error',
-      value: `\`${data.error}\``
-    })
-    .addFields({
-      name: 'In so and so many words...',
-      value: `The Shodan Service now requires a paid membership to use lol.`
-    })
-}
 
 module.exports = {
   errNoVoiceChannel,
@@ -128,7 +103,5 @@ module.exports = {
   noBans,
   allCommands,
   successJoinVoiceChannel,
-  errorJoinVoiceChannel,
-  searchIpResp,
-  shodanAPIError
+  errorJoinVoiceChannel
 }

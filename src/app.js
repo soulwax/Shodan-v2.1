@@ -5,7 +5,6 @@ require(`dotenv`).config()
 const SHODAN_TOKEN = process.env.SHODAN_TOKEN
 const CLIENT_ID = process.env.CLIENT_ID
 const TRACKING_CHANNEL_NAME = process.env.TRACKING_CHANNEL_NAME
-const SHODAN_API = process.env.SHODAN_API
 //#endregion
 
 //#region REQUIRES
@@ -21,7 +20,6 @@ const {
   createAudioPlayer,
   createAudioResource
 } = require('@discordjs/voice')
-const axios = require('axios')
 
 //#endregion
 
@@ -63,40 +61,6 @@ setServer.client.on('messageCreate', (message) => {
 setServer.client.on(`interactionCreate`, async (interaction) => {
   if (!interaction.isCommand()) return
   console.log(interaction.commandName)
-  if (interaction.commandName === `ip`) {
-    let ipAddress = interaction.options.getString(`ip`)
-
-    options = {
-      method: 'GET',
-      url:
-        'https://api.shodan.io/shodan/host/' +
-        String(ipAddress) +
-        '?key=' +
-        SHODAN_API,
-      headers: {
-        'Accept-Encoding': 'gzip,deflate,compress'
-      }
-    }
-    console.log(`Axios Request options: ${JSON.stringify(options)}`)
-    await axios
-      .request(options)
-      .then(async (response) => {
-        let data = {
-          ip: ipAddress,
-          city: response.data.city
-        }
-        const embed = responseTemplates.searchIpResp(data)
-        await interaction.reply({ embeds: [embed] })
-      })
-      .catch(async function (error) {
-        console.error(error)
-        const error_data = {
-          error: error
-        }
-        const embed = responseTemplates.shodanAPIError(error_data)
-        await interaction.reply({ embeds: [embed] })
-      })
-  }
   if (interaction.commandName === `ping`) {
     // get command from interaction, then execute it's own async function
     // const command = await commands.find((cmd) => cmd.name === interaction.commandName)
