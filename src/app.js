@@ -77,7 +77,7 @@ setServer.client.on(`interactionCreate`, async (interaction) => {
         'Accept-Encoding': 'gzip,deflate,compress'
       }
     }
-
+    console.log(`Axios Request options: ${JSON.stringify(options)}`)
     await axios
       .request(options)
       .then(async (response) => {
@@ -88,8 +88,13 @@ setServer.client.on(`interactionCreate`, async (interaction) => {
         const embed = responseTemplates.searchIpResp(data)
         await interaction.reply({ embeds: [embed] })
       })
-      .catch(function (error) {
+      .catch(async function (error) {
         console.error(error)
+        const error_data = {
+          error: error
+        }
+        const embed = responseTemplates.shodanAPIError(error_data)
+        await interaction.reply({ embeds: [embed] })
       })
   }
   if (interaction.commandName === `ping`) {

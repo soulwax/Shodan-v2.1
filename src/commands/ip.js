@@ -2,7 +2,7 @@ const { SlashCommandBuilder } = require(`discord.js`)
 
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName('searchip')
+    .setName('ip')
     .addStringOption(option =>
       option.setName('ip')
         .setDescription('Get information about specific ip-address'))

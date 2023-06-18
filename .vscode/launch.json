@@ -6,7 +6,7 @@
   "configurations": [
     {
       "name": "Attach",
-      "port": 9229,
+      "port": 7507,
       "request": "attach",
       "skipFiles": [
         "<node_internals>/**"
@@ -23,7 +23,7 @@
       "type": "node"
     },
     {
-      "command": "nodemon --inspect=9229 ${workspaceFolder}/app.js",
+      "command": "nodemon --inspect=7507 ${workspaceFolder}/app.js",
       "name": "nodemon",
       "request": "launch",
       "type": "node-terminal"
