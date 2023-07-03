@@ -90,9 +90,25 @@ function errorJoinVoiceChannel(voiceChannelName) {
     .setColor(`#ff0000`)
 }
 
+function errAdmin() {
+  return new EmbedBuilder()
+    .setTitle(`Error`)
+    .setDescription(`You don't have the permission to do that or the options were not set correctly.`)
+    .setColor(`#ff0000`)
+}
+
+function purge(integer) {
+  return new EmbedBuilder()
+    .setTitle(`Purging...`)
+    .setDescription(`${integer} posts in this channel were purged.`)
+    .setColor(`#ab0000`)
+}
+
 
 module.exports = {
+  purge,
   errNoVoiceChannel,
+  errAdmin,
   AskToJoinVoiceChannel,
   pong,
   errMentionUser,
