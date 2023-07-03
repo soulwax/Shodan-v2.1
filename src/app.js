@@ -2,11 +2,11 @@
 
 //#region ENVIRONMENT VARIABLES
 require(`dotenv`).config()
-const SHODAN_TOKEN = process.env.SHODAN_TOKEN
+const TOKEN = process.env.TOKEN
 const CLIENT_ID = process.env.CLIENT_ID
 const TRACKING_CHANNEL_NAME = process.env.TRACKING_CHANNEL_NAME
 //#endregion
-
+const { ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js')
 //#region REQUIRES
 const fs = require('node:fs')
 const path = require('node:path')
@@ -20,9 +20,9 @@ const {
   createAudioPlayer,
   createAudioResource
 } = require('@discordjs/voice')
-
+let globalGreetingsEmbed
 //#endregion
-
+const LANGUAGE_CHANNEL_ID = process.env.LANGUAGE_CHANNEL_ID
 //#region COMMANDS
 const commands = []
 const commandFiles = fs
@@ -31,7 +31,7 @@ const commandFiles = fs
 
 for (const file of commandFiles) {
   const command = require(`./commands/${file}`)
-  console.log(command)
+  //   console.log(command)
   commands.push(command.data.toJSON())
 }
 
@@ -82,6 +82,38 @@ setServer.client.on(`interactionCreate`, async (interaction) => {
     const memberList = members.map((member) => member.user.tag).join(`\n`)
     const embed = responseTemplates.membersList(guild.name, memberList)
     await interaction.reply({ embeds: [embed] })
+  }
+
+  if (interaction.commandName === `purge`) {
+    // Get caller's permissions, he should have the "admin" role
+    let isAdmin = false
+    let integer
+    try {
+      const permissions = interaction.member.permissions.bitfield
+      isAdmin = interaction.member.permissions.has(`ADMINISTRATOR`)
+      integer = interaction.options.getInteger('integer')
+
+      if (!isAdmin || !integer) {
+        //send error embed message
+        const embed = responseTemplates.errAdmin()
+        await interaction.reply({ embeds: [embed] })
+        return
+      }
+    } catch (error) {
+      console.error(error)
+      isAdmin = false
+      const embed = responseTemplates.errAdmin()
+      await interaction.reply({ embeds: [embed], ephemeral: true })
+      return
+    }
+
+    let messages = await interaction.channel.messages.fetch({ limit: integer })
+
+    // Delete messages
+    await interaction.channel.bulkDelete(messages, true)
+
+    const embed = responseTemplates.purge(integer)
+    await interaction.reply({ embeds: [embed], ephemeral: true })
   }
 
   if (interaction.commandName === `avatar`) {
@@ -199,6 +231,88 @@ setServer.client.on(`interactionCreate`, async (interaction) => {
   }
 })
 
+setServer.client.on('guildMemberAdd', async (member) => {
+  globalGreetingsEmbed = new EmbedBuilder()
+    .setColor('#0099ff')
+    .setTitle('Welcome to the server! Willkommen auf unserem Server!')
+    .setDescription(
+      'Please select your language: - Bitte wähle deine Sprache aus:'
+    )
+    
+  // Create a new MessageActionRow and add the buttons to it
+  const row = new ActionRowBuilder().addComponents(
+    new ButtonBuilder()
+      .setCustomId('english')
+      .setLabel('English')
+      .setStyle(ButtonStyle.Primary), // Blue button
+    new ButtonBuilder()
+      .setCustomId('german')
+      .setLabel('German')
+      .setStyle(ButtonStyle.Danger) // Red button
+  )
+  // Reply in channel id LANGUAGE_CHANNEL_ID
+  await member.guild.channels.cache.get(LANGUAGE_CHANNEL_ID).send({
+    embeds: [globalGreetingsEmbed],
+    components: [row],
+    ephemeral: true
+  })
+})
+
+// Listen for the 'interactionCreate' event
+setServer.client.on('interactionCreate', async (interaction) => {
+  if (!interaction.isButton()) return
+  const localEmbed = new EmbedBuilder()
+    .setColor('#0099ff')
+    
+  // Handle the 'english' button
+  if (interaction.customId === 'english') {
+    // Get the role you want to assign
+    const role = interaction.guild.roles.cache.find(
+      (role) => role.name === 'EN'
+    )
+    try {
+      cleanupGreeterEmbed(globalGreetingsEmbed, interaction)
+      await interaction.member.roles.add(role)
+      const name = interaction.member.user.username
+      localEmbed.setTitle('Welcome to the server!')
+      localEmbed.setDescription(
+        `@${name}, you have been verified as an English speaker and assigned the appropriate role.`
+      )
+      await interaction.reply({ embeds: [localEmbed], ephemeral: true })
+    } catch (error) {
+      console.log(error)
+    } finally {
+    }
+  }
+
+  // Handle the 'other' button
+  if (interaction.customId === 'german') {
+    // Handle non-English speakers
+    const role = interaction.guild.roles.cache.find(
+      (role) => role.name === 'DE'
+    )
+    // Add the role to the member and send a confirmation message
+    try {
+      cleanupGreeterEmbed(globalGreetingsEmbed, interaction)
+      await interaction.member.roles.add(role)
+      const name = interaction.member.user.username
+      localEmbed.setTitle('Willkommen auf unserem Server!')
+      localEmbed.setDescription(
+        `@${name}, du wurdest als Deutschsprachiger verifiziert und der entsprechenden Rolle zugewiesen.`
+      )
+      await interaction.reply({ embeds: [localEmbed], ephemeral: true })
+    } catch (error) {
+      console.log(error)
+    }
+  }
+})
+
+const cleanupGreeterEmbed = async (embed, interaction) => {
+  await interaction.message.edit({
+    components: []
+  })
+}
+
 // Leave voice chat when called the /leave command
 setServer.client.on(`interactionCreate`, async (interaction) => {
   if (interaction.commandName === `leave`) {
@@ -280,4 +394,4 @@ setServer.client.on(`ready`, () => {
   console.log(`Logged in as ${setServer.client.user.tag}!`)
 })
 
-setServer.client.login(SHODAN_TOKEN)
+setServer.client.login(TOKEN)
