@@ -3,7 +3,7 @@ const {
 } = require(`discord.js`);
 const { REST } = require('@discordjs/rest')
 require(`dotenv`).config()
-const SHODAN_TOKEN = process.env.SHODAN_TOKEN
+const TOKEN = process.env.TOKEN
 const InvitesTracker = require('@androz2091/discord-invites-tracker');
 
 //#region Intents
@@ -33,7 +33,7 @@ const intents = Object.values(IntentBits).reduce((a, b) => a | b, 0)
 //#endregion
 
 //#region REST + CLIENT API + INTENTS
-const rest = new REST({ version: '10' }).setToken(SHODAN_TOKEN)
+const rest = new REST({ version: '10' }).setToken(TOKEN)
 
 const client = new Client({
   intents: intents
