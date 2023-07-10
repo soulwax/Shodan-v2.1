@@ -4,7 +4,7 @@
 require(`dotenv`).config()
 const TOKEN = process.env.TOKEN
 const CLIENT_ID = process.env.CLIENT_ID
-const TRACKING_CHANNEL_NAME = process.env.TRACKING_CHANNEL_NAME
+const TRACKING_CHANNEL_ID = process.env.TRACKING_CHANNEL_ID
 //#endregion
 const { ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js')
 //#region REQUIRES
@@ -351,9 +351,8 @@ setServer.client.on(`interactionCreate`, async (interaction) => {
 // users joining on the discord server
 setServer.tracker.on('guildMemberAdd', (member, type, invite) => {
   console.log('guildMemberAdd')
-  const adminGeneral = member.guild.channels.cache.find(
-    (ch) => ch.name === `${TRACKING_CHANNEL_NAME}`
-  )
+  // find channel by TRACKING_CHANNEL_ID
+  const adminGeneral = member.guild.channels.cache.get(TRACKING_CHANNEL_ID)
 
   // Get accurate age of account in days
   const accountAge = Math.floor(
