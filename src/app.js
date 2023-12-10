@@ -121,7 +121,7 @@ setServer.client.on(`interactionCreate`, async (interaction) => {
     const user = interaction.options.getMentionable(`user`)
 
     const userName = user.user.tag
-    const userAvatar = user.displayAvatarURL()
+    const userAvatar = user.displayAvatarURL({size: 2048})
 
     if (!user || !userName || !userAvatar) {
       //send error embed message
@@ -149,7 +149,7 @@ setServer.client.on(`interactionCreate`, async (interaction) => {
   if (interaction.commandName === `help`) {
     const embed = responseTemplates.allCommands(
       client.user.tag,
-      client.user.displayAvatarURL()
+      client.user.displayAvatarURL({size: 2048})
     )
     for (const command of commands) {
       embed.addFields({
