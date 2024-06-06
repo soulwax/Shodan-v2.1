@@ -14,6 +14,7 @@ const { Routes } = require('discord.js')
 const { EmbedBuilder } = require(`discord.js`)
 const responseTemplates = require('./embeds') // discord embed messages
 const setServer = require('./server-setup/setup-server') // client, tracker, rest setup
+const client = setServer.client
 const {
   joinVoiceChannel,
   VoiceConnectionStatus,
@@ -52,13 +53,13 @@ for (const file of commandFiles) {
 })()
 
 // "message" event
-setServer.client.on('messageCreate', (message) => {
+client.on('messageCreate', (message) => {
   // This function is executed each time your bot sees a message
   // in a server OR DM!
   console.log(JSON.stringify(message))
 })
 
-setServer.client.on(`interactionCreate`, async (interaction) => {
+client.on(`interactionCreate`, async (interaction) => {
   if (!interaction.isCommand()) return
   console.log(interaction.commandName)
   if (interaction.commandName === `ping`) {
@@ -199,8 +200,8 @@ setServer.client.on(`interactionCreate`, async (interaction) => {
 
   if (interaction.commandName === `help`) {
     const embed = responseTemplates.allCommands(
-      setServer.client.user.tag,
-      setServer.client.user.displayAvatarURL({ size: 2048 })
+      client.user.tag,
+      client.user.displayAvatarURL({ size: 2048 })
     )
     for (const command of commands) {
       embed.addFields({
@@ -213,7 +214,7 @@ setServer.client.on(`interactionCreate`, async (interaction) => {
 })
 
 // Nuke command
-setServer.client.on('interactionCreate', async (interaction) => {
+client.on('interactionCreate', async (interaction) => {
   if (!interaction.isCommand()) return
   if (interaction.commandName === 'nuke') {
     const amount = interaction.options.getInteger('amount')
@@ -230,14 +231,14 @@ setServer.client.on('interactionCreate', async (interaction) => {
   }
 })
 
-setServer.client.on(VoiceConnectionStatus.Ready, () => {
+client.on(VoiceConnectionStatus.Ready, () => {
   console.log(
     'The connection has entered the Ready state - ready to play audio!'
   )
 })
 
 // Join voice chat when called the /join command
-setServer.client.on(`interactionCreate`, async (interaction) => {
+client.on(`interactionCreate`, async (interaction) => {
   if (interaction.commandName === `join`) {
     // Get the voice channel the user is currently in
     const voiceChannel = interaction.member.voice.channel
@@ -282,7 +283,7 @@ setServer.client.on(`interactionCreate`, async (interaction) => {
   }
 })
 
-setServer.client.on('guildMemberAdd', async (member) => {
+client.on('guildMemberAdd', async (member) => {
   globalGreetingsEmbed = new EmbedBuilder()
     .setColor('#0099ff')
     .setTitle('Welcome to the server! Willkommen auf unserem Server!')
@@ -310,7 +311,7 @@ setServer.client.on('guildMemberAdd', async (member) => {
 })
 
 // Listen for the 'interactionCreate' event
-setServer.client.on('interactionCreate', async (interaction) => {
+client.on('interactionCreate', async (interaction) => {
   if (!interaction.isButton()) return
   const localEmbed = new EmbedBuilder().setColor('#0099ff')
 
@@ -364,7 +365,7 @@ const cleanupGreeterEmbed = async (embed, interaction) => {
 }
 
 // Leave voice chat when called the /leave command
-setServer.client.on(`interactionCreate`, async (interaction) => {
+client.on(`interactionCreate`, async (interaction) => {
   if (interaction.commandName === `leave`) {
     // Get the voice channel the user is currently in
     const voiceChannel = interaction.member.voice.channel
@@ -439,8 +440,8 @@ setServer.tracker.on('guildMemberAdd', (member, type, invite) => {
 })
 //#endregion
 
-setServer.client.on(`ready`, () => {
-  console.log(`Logged in as ${setServer.client.user.tag}!`)
+client.on(`ready`, () => {
+  console.log(`Logged in as ${client.user.tag}!`)
 })
 
-setServer.client.login(TOKEN)
+client.login(TOKEN)
