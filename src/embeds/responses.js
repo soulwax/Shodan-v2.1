@@ -93,7 +93,9 @@ function errorJoinVoiceChannel(voiceChannelName) {
 function errAdmin() {
   return new EmbedBuilder()
     .setTitle(`Error`)
-    .setDescription(`You don't have the permission to do that or the options were not set correctly.`)
+    .setDescription(
+      `You don't have the permission to do that or the options were not set correctly.`
+    )
     .setColor(`#ff0000`)
 }
 
@@ -104,6 +106,9 @@ function purge(integer) {
     .setColor(`#ab0000`)
 }
 
+function getRandom(min, max) {
+  return Math.floor(Math.random() * (max - min) + min)
+}
 
 module.exports = {
   purge,

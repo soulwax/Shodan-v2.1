@@ -121,7 +121,7 @@ setServer.client.on(`interactionCreate`, async (interaction) => {
     const user = interaction.options.getMentionable(`user`)
 
     const userName = user.user.tag
-    const userAvatar = user.displayAvatarURL({size: 2048})
+    const userAvatar = user.displayAvatarURL({ size: 2048 })
 
     if (!user || !userName || !userAvatar) {
       //send error embed message
@@ -146,10 +146,17 @@ setServer.client.on(`interactionCreate`, async (interaction) => {
     }
   }
 
+  if (interaction.commandName === `random`) {
+    const min = interaction.options.getInteger(`min`)
+    const max = interaction.options.getInteger(`max`)
+    const random = responseTemplates.getRandom(min, max)
+    await interaction.reply({ content: `${random}` })
+  }
+
   if (interaction.commandName === `help`) {
     const embed = responseTemplates.allCommands(
       client.user.tag,
-      client.user.displayAvatarURL({size: 2048})
+      client.user.displayAvatarURL({ size: 2048 })
     )
     for (const command of commands) {
       embed.addFields({
@@ -238,7 +245,7 @@ setServer.client.on('guildMemberAdd', async (member) => {
     .setDescription(
       'Please select your language: - Bitte wähle deine Sprache aus:'
     )
-    
+
   // Create a new MessageActionRow and add the buttons to it
   const row = new ActionRowBuilder().addComponents(
     new ButtonBuilder()
@@ -261,9 +268,8 @@ setServer.client.on('guildMemberAdd', async (member) => {
 // Listen for the 'interactionCreate' event
 setServer.client.on('interactionCreate', async (interaction) => {
   if (!interaction.isButton()) return
-  const localEmbed = new EmbedBuilder()
-    .setColor('#0099ff')
-    
+  const localEmbed = new EmbedBuilder().setColor('#0099ff')
+
   // Handle the 'english' button
   if (interaction.customId === 'english') {
     // Get the role you want to assign
