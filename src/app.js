@@ -161,13 +161,26 @@ setServer.client.on(`interactionCreate`, async (interaction) => {
   }
 
   if (interaction.commandName === 'roll') {
-    const diceNotation = interaction.options.getString('dice_notation')
+    const diceNotation = interaction.options
+      .getString('dice_notation')
+      .toLowerCase() // Convert to lowercase for case-insensitive matching
 
     try {
-      const [numDice, numSides] = diceNotation.split('d').map(Number)
+      const match = diceNotation.match(/(\d+)[dw](\d+)/) // Match either 'd' or 'w'
 
-      if (!numDice || !numSides || numDice < 1 || numSides < 2) {
-        throw new Error('Invalid dice notation. Use NdX format (e.g., 2d6).')
+      if (!match) {
+        throw new Error(
+          'Invalid dice notation. Use NdX or NwX format (e.g., 2d6 or 3w8).'
+        )
+      }
+
+      const numDice = parseInt(match[1], 10)
+      const numSides = parseInt(match[2], 10)
+
+      if (numDice < 1 || numSides < 2) {
+        throw new Error(
+          'Invalid number of dice or sides. Must have at least 1 die and 2 sides.'
+        )
       }
 
       const rolls = []
@@ -177,7 +190,7 @@ setServer.client.on(`interactionCreate`, async (interaction) => {
 
       const message = `You rolled ${diceNotation}: ${rolls.join(
         ', '
-      )} (Total: ${rolls.reduce((a, b) => a + b)})` // Added total for convenience
+      )} (Total: ${rolls.reduce((a, b) => a + b)})`
       await interaction.reply({ content: message })
     } catch (error) {
       await interaction.reply({ content: error.message })
