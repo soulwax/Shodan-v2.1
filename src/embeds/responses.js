@@ -107,10 +107,12 @@ function purge(integer) {
 }
 
 function getRandom(min, max) {
-  return Math.floor(Math.random() * (max - min) + min)
+  // number between min anx max (inclusive)
+  return Math.floor(Math.random() * (max - min + 1) + min)
 }
 
 module.exports = {
+  getRandom,
   purge,
   errNoVoiceChannel,
   errAdmin,

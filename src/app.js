@@ -146,11 +146,18 @@ setServer.client.on(`interactionCreate`, async (interaction) => {
     }
   }
 
-  if (interaction.commandName === `random`) {
+  if (interaction.commandName === `dice`) {
+    const n = interaction.options.getInteger(`n`)
     const min = interaction.options.getInteger(`min`)
     const max = interaction.options.getInteger(`max`)
-    const random = responseTemplates.getRandom(min, max)
-    await interaction.reply({ content: `${random}` })
+    // array of random numbers
+    const randoms = []
+    for (let i = 0; i < n; i++) {
+      randoms.push(responseTemplates.getRandom(min, max))
+    }
+
+    const message = randoms.join(`, `)
+    await interaction.reply({ content: `${message}` })
   }
 
   if (interaction.commandName === `help`) {
