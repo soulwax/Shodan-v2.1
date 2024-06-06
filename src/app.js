@@ -199,8 +199,8 @@ setServer.client.on(`interactionCreate`, async (interaction) => {
 
   if (interaction.commandName === `help`) {
     const embed = responseTemplates.allCommands(
-      client.user.tag,
-      client.user.displayAvatarURL({ size: 2048 })
+      setServer.client.user.tag,
+      setServer.client.user.displayAvatarURL({ size: 2048 })
     )
     for (const command of commands) {
       embed.addFields({
