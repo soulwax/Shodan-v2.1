@@ -153,7 +153,7 @@ setServer.client.on(`interactionCreate`, async (interaction) => {
     // array of random numbers
     const randoms = []
     for (let i = 0; i < n; i++) {
-      randoms.push(responseTemplates.getRandom(min, max))
+      randoms.push(responseTemplates.getRandomSecure(min, max))
     }
 
     const message = randoms.join(`, `)
@@ -185,7 +185,7 @@ setServer.client.on(`interactionCreate`, async (interaction) => {
 
       const rolls = []
       for (let i = 0; i < numDice; i++) {
-        rolls.push(responseTemplates.rollDie(numSides))
+        rolls.push(responseTemplates.rollDieSecure(numSides))
       }
 
       const message = `You rolled ${diceNotation}: ${rolls.join(

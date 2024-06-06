@@ -1,4 +1,5 @@
 const { EmbedBuilder } = require(`discord.js`)
+const crypto = require('crypto')
 
 function errNoVoiceChannel() {
   return new EmbedBuilder()
@@ -111,11 +112,22 @@ function getRandom(min, max) {
   return Math.floor(Math.random() * (max - min + 1) + min)
 }
 
+function getRandomSecure(min, max) {
+  // number between min anx max (inclusive)
+  return crypto.randomInt(min, max)
+}
+
 function rollDie(numSides) {
   return Math.floor(Math.random() * numSides) + 1 // Adjusted for 1-based dice
 }
 
+function rollDieSecure(numSides) {
+  return crypto.randomInt(1, numSides) // Adjusted for 1-based dice
+}
+
 module.exports = {
+  rollDieSecure,
+  getRandomSecure,
   rollDie,
   getRandom,
   purge,
