@@ -111,7 +111,12 @@ function getRandom(min, max) {
   return Math.floor(Math.random() * (max - min + 1) + min)
 }
 
+function rollDie(numSides) {
+  return Math.floor(Math.random() * numSides) + 1 // Adjusted for 1-based dice
+}
+
 module.exports = {
+  rollDie,
   getRandom,
   purge,
   errNoVoiceChannel,

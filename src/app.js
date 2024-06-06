@@ -160,6 +160,30 @@ setServer.client.on(`interactionCreate`, async (interaction) => {
     await interaction.reply({ content: `${message}` })
   }
 
+  if (interaction.commandName === 'roll') {
+    const diceNotation = interaction.options.getString('dice_notation')
+
+    try {
+      const [numDice, numSides] = diceNotation.split('d').map(Number)
+
+      if (!numDice || !numSides || numDice < 1 || numSides < 2) {
+        throw new Error('Invalid dice notation. Use NdX format (e.g., 2d6).')
+      }
+
+      const rolls = []
+      for (let i = 0; i < numDice; i++) {
+        rolls.push(responseTemplates.rollDie(numSides))
+      }
+
+      const message = `You rolled ${diceNotation}: ${rolls.join(
+        ', '
+      )} (Total: ${rolls.reduce((a, b) => a + b)})` // Added total for convenience
+      await interaction.reply({ content: message })
+    } catch (error) {
+      await interaction.reply({ content: error.message })
+    }
+  }
+
   if (interaction.commandName === `help`) {
     const embed = responseTemplates.allCommands(
       client.user.tag,
