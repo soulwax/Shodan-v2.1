@@ -14,6 +14,7 @@ const { Routes } = require('discord.js')
 const { EmbedBuilder } = require(`discord.js`)
 const responseTemplates = require('./embeds') // discord embed messages
 const setServer = require('./server-setup/setup-server') // client, tracker, rest setup
+const crypto = require('crypto')
 const client = setServer.client
 const {
   joinVoiceChannel,
@@ -36,6 +37,30 @@ for (const file of commandFiles) {
   commands.push(command.data.toJSON())
 }
 
+function splitLongText(text, maxLength = 1024) {
+  if (text.length <= maxLength) return [text];
+  
+  const parts = [];
+  let remainingText = text;
+  
+  while (remainingText.length > maxLength) {
+    let splitIndex = remainingText.lastIndexOf('.', maxLength);
+    if (splitIndex === -1) splitIndex = remainingText.lastIndexOf(' ', maxLength);
+    if (splitIndex === -1) splitIndex = maxLength;
+    
+    parts.push(remainingText.substring(0, splitIndex + 1));
+    remainingText = remainingText.substring(splitIndex + 1).trim();
+  }
+  
+  if (remainingText.length > 0) parts.push(remainingText);
+  return parts;
+}
+
+// At the top with other imports
+const OpenAI = require('openai')
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY
+})
 //#endregion COMMANDS
 
 ;(async () => {
@@ -144,6 +169,158 @@ client.on(`interactionCreate`, async (interaction) => {
     } else {
       const embed = responseTemplates.bannedList(guild.name, list) // create banned list embed
       await interaction.reply({ embeds: [embed] })
+    }
+  }
+
+  if (interaction.commandName === 'divine') {
+    try {
+      // Defer reply since we'll be making API calls
+      await interaction.deferReply()
+      console.log('[DEBUG] Divine command triggered')
+      
+      // First declare and initialize cardDataPath
+      const cardDataPath = path.join(__dirname, '../static/card-data.json')
+      console.log('[DEBUG] Loading card data from:', cardDataPath)
+      
+      // Then use it to load the card data
+      const cardData = JSON.parse(fs.readFileSync(cardDataPath, 'utf8'))
+      
+      // Get user's question if provided
+      const question = interaction.options.getString('question')
+      console.log('[DEBUG] Question:', question)
+
+      // Draw a random card
+      const randomIndex = crypto.randomInt(0, cardData.cards.length)
+      const card = cardData.cards[randomIndex]
+      const isReversed = crypto.randomInt(0, 2) === 1
+      console.log('[DEBUG] Drew card:', card.name, isReversed ? '(reversed)' : '(upright)')
+
+      // Get AI interpretation
+      const prompt = `As a mystic tarot reader, provide a brief but meaningful interpretation for:
+
+Card: ${card.name} ${isReversed ? '(Reversed)' : '(Upright)'}
+${question ? `Question: ${question}` : 'No specific question was asked.'}
+
+Card Description: ${card.desc}
+Traditional Meaning: ${isReversed ? card.meaning_rev : card.meaning_up}
+
+Please provide a concise interpretation that:
+1. Acknowledges the question (if any)
+2. Explains key symbolism
+3. Offers practical guidance
+4. Maintains a mystical tone
+
+Keep the response under 800 characters total.`
+
+      console.log('[DEBUG] Requesting AI interpretation')
+      const completion = await openai.chat.completions.create({
+        model: 'gpt-4-1106-preview',
+        messages: [{ role: 'user', content: prompt }],
+        temperature: 0.7,
+        max_tokens: 500
+      })
+
+      const aiInterpretation = completion.choices[0].message.content.trim()
+      console.log('[DEBUG] Received AI interpretation')
+
+      // Create embed
+      const embed = new EmbedBuilder()
+        .setTitle(`🔮 ${card.name}${isReversed ? ' (Reversed)' : ''}`)
+        .setColor('#9B59B6')
+
+      // Handle image attachment
+      const suit = card.type === 'major' ? 'm' : 
+                   card.suit === 'cups' ? 'c' :
+                   card.suit === 'wands' ? 'w' :
+                   card.suit === 'swords' ? 's' : 'p'
+
+      let imageFilename
+      if (card.type === 'major') {
+        const num = card.value_int.toString().padStart(2, '0')
+        const name = card.name.toLowerCase().replace(/\s+/g, '')
+        imageFilename = `${suit}_${num}_${name}.jpg`
+      } else {
+        if (['page', 'knight', 'queen', 'king'].includes(card.value)) {
+          imageFilename = `${suit}_${card.value}.jpg`
+        } else if (card.value === 'ace') {
+          imageFilename = `${suit}_ace.jpg`
+        } else {
+          imageFilename = `${suit}_${card.value_int}.jpg`
+        }
+      }
+
+      const imagePath = path.join(__dirname, '../static/images', imageFilename)
+      console.log('[DEBUG] Looking for image at:', imagePath)
+
+      // Split and add fields
+      if (question) {
+        embed.addFields({
+          name: 'Your Question',
+          value: question,
+          inline: false
+        })
+      }
+
+      // Add traditional meaning
+      const meaning = isReversed ? card.meaning_rev : card.meaning_up
+      const meaningParts = splitLongText(meaning);
+      meaningParts.forEach((part, index) => {
+        embed.addFields({
+          name: index === 0 ? 'Traditional Meaning' : 'Traditional Meaning (continued)',
+          value: part,
+          inline: false
+        })
+      })
+
+      // Add AI interpretation
+      const aiParts = splitLongText(aiInterpretation);
+      aiParts.forEach((part, index) => {
+        embed.addFields({
+          name: index === 0 ? 'Personalized Reading' : 'Personalized Reading (continued)',
+          value: part,
+          inline: false
+        })
+      })
+
+      embed.setFooter({
+        text: 'The cards offer guidance, but you chart your own path. Trust your intuition.'
+      })
+
+      // Check if image exists and send response
+      if (fs.existsSync(imagePath)) {
+        console.log('[DEBUG] Image found, attaching to embed')
+        await interaction.editReply({
+          embeds: [embed],
+          files: [{
+            attachment: imagePath,
+            name: imageFilename
+          }]
+        })
+      } else {
+        console.log('[DEBUG] Image not found, sending embed without image')
+        await interaction.editReply({ embeds: [embed] })
+      }
+
+    } catch (error) {
+      console.error('[DEBUG] Error in divine command:', error)
+      const errorEmbed = new EmbedBuilder()
+        .setTitle('🔮 Error')
+        .setDescription('The spirits are unclear at this moment. Please try again later.')
+        .setColor('#FF0000')
+        .addFields({
+          name: 'Error Details',
+          value: 'There was an issue connecting with the mystical forces.'
+        })
+
+      try {
+        if (!interaction.deferred) {
+          await interaction.reply({ embeds: [errorEmbed], ephemeral: true })
+        } else {
+          await interaction.editReply({ embeds: [errorEmbed] })
+        }
+      } catch (replyError) {
+        console.error('[DEBUG] Error sending error message:', replyError)
+      }
     }
   }
 
