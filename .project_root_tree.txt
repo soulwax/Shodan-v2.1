@@ -1,0 +1,35 @@
+.
+├── .editorconfig
+├── .env
+├── .env-template
+├── .gitignore
+├── .prettierrc
+├── .project_root_tree.txt
+├── README.md
+├── package-lock.json
+├── package.json
+├── scripts
+│   └── add_file_annotations.sh
+└── src
+    ├── app.js
+    ├── commands
+    │   ├── avatar.js
+    │   ├── banned.js
+    │   ├── dice.js
+    │   ├── echo.js
+    │   ├── example.js
+    │   ├── help.js
+    │   ├── join.js
+    │   ├── members.js
+    │   ├── muse.js
+    │   ├── ping.js
+    │   ├── purge.js
+    │   └── roll.js
+    ├── embeds
+    │   ├── index.js
+    │   └── responses.js
+    └── server-setup
+        ├── mongo-connect.js
+        └── setup-server.js
+
+6 directories, 27 files
