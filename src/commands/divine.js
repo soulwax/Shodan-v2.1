@@ -6,79 +6,114 @@ const path = require('path')
 const fs = require('fs')
 
 // Load the card data
-const cardDataPath = path.join(__dirname, '../../static/card-data.json')
-const cardData = JSON.parse(fs.readFileSync(cardDataPath, 'utf8'))
+let cardData;
+try {
+  const cardDataPath = path.join(__dirname, '../../static/card-data.json')
+  console.log('Loading card data from:', cardDataPath)
+  const rawData = fs.readFileSync(cardDataPath, 'utf8')
+  cardData = JSON.parse(rawData)
+  console.log(`Successfully loaded ${cardData.cards.length} cards`)
+} catch (error) {
+  console.error('Error loading card data:', error)
+  throw new Error('Failed to initialize divine command: Card data could not be loaded')
+}
 
 function getImageFilename(card) {
-  if (card.type === 'major') {
-    // Handle major arcana cards
-    // Convert card number to two digits and lowercase name
-    const num = card.value_int.toString().padStart(2, '0')
-    const name = card.name.toLowerCase().replace(/\s+/g, '')
-    return `m_${num}_${name}.jpg`
-  } else {
-    // Handle minor arcana cards
-    const suitMap = {
-      cups: 'c',
-      wands: 'w',
-      swords: 's',
-      pentacles: 'p'
-    }
-    
-    const suit = suitMap[card.suit]
-    let value = card.value
-    
-    // Handle court cards and number cards
-    if (['page', 'knight', 'queen', 'king'].includes(value)) {
-      return `${suit}_${value}.jpg`
-    } else if (value === 'ace') {
-      return `${suit}_ace.jpg`
+  try {
+    if (card.type === 'major') {
+      const num = card.value_int.toString().padStart(2, '0')
+      const name = card.name.toLowerCase().replace(/\s+/g, '')
+      const filename = `m_${num}_${name}.jpg`
+      console.log('Generated major arcana filename:', filename)
+      return filename
     } else {
-      // For number cards, just use the number
-      return `${suit}_${card.value_int}.jpg`
+      const suitMap = {
+        cups: 'c',
+        wands: 'w',
+        swords: 's',
+        pentacles: 'p'
+      }
+      
+      const suit = suitMap[card.suit]
+      if (!suit) {
+        console.error('Invalid suit:', card.suit)
+        throw new Error('Invalid card suit')
+      }
+
+      let value = card.value
+      let filename;
+      
+      if (['page', 'knight', 'queen', 'king'].includes(value)) {
+        filename = `${suit}_${value}.jpg`
+      } else if (value === 'ace') {
+        filename = `${suit}_ace.jpg`
+      } else {
+        filename = `${suit}_${card.value_int}.jpg`
+      }
+      
+      console.log('Generated minor arcana filename:', filename)
+      return filename
     }
+  } catch (error) {
+    console.error('Error generating image filename:', error)
+    console.error('Card data:', JSON.stringify(card, null, 2))
+    throw new Error('Failed to generate image filename')
   }
 }
 
 function drawCard() {
-  const randomIndex = crypto.randomInt(0, cardData.cards.length)
-  const card = cardData.cards[randomIndex]
-  const isReversed = crypto.randomInt(0, 2) === 1 // 50% chance of reversal
-  return { card, isReversed }
+  try {
+    const randomIndex = crypto.randomInt(0, cardData.cards.length)
+    const card = cardData.cards[randomIndex]
+    const isReversed = crypto.randomInt(0, 2) === 1
+    console.log('Drew card:', card.name, isReversed ? '(reversed)' : '(upright)')
+    return { card, isReversed }
+  } catch (error) {
+    console.error('Error drawing card:', error)
+    throw new Error('Failed to draw card')
+  }
 }
 
 function createDivineEmbed(card, isReversed) {
-  const imageFilename = getImageFilename(card)
-  const imagePath = path.join(__dirname, '../../static/images', imageFilename)
-  
-  const embed = new EmbedBuilder()
-    .setTitle(`🔮 ${card.name}${isReversed ? ' (Reversed)' : ''}`)
-    .setColor('#9B59B6') // Purple color for mystical feeling
-    .addFields(
-      { 
-        name: 'Arcana & Value', 
-        value: `${card.type.charAt(0).toUpperCase() + card.type.slice(1)} Arcana • ${card.value}`, 
-        inline: true 
-      },
-      { 
-        name: 'Meaning', 
-        value: isReversed ? card.meaning_rev : card.meaning_up 
-      },
-      { 
-        name: 'Description & Symbolism', 
-        value: card.desc.length > 1024 ? card.desc.substring(0, 1021) + '...' : card.desc 
-      }
-    )
-    .setFooter({ 
-      text: 'The cards offer guidance, but you chart your own path. Trust your intuition.' 
-    })
+  try {
+    const imageFilename = getImageFilename(card)
+    const imagePath = path.join(__dirname, '../../static/images', imageFilename)
+    console.log('Looking for image at:', imagePath)
+    
+    const embed = new EmbedBuilder()
+      .setTitle(`🔮 ${card.name}${isReversed ? ' (Reversed)' : ''}`)
+      .setColor('#9B59B6')
+      .addFields(
+        { 
+          name: 'Arcana & Value', 
+          value: `${card.type.charAt(0).toUpperCase() + card.type.slice(1)} Arcana • ${card.value}`, 
+          inline: true 
+        },
+        { 
+          name: 'Meaning', 
+          value: isReversed ? card.meaning_rev : card.meaning_up 
+        },
+        { 
+          name: 'Description & Symbolism', 
+          value: card.desc.length > 1024 ? card.desc.substring(0, 1021) + '...' : card.desc 
+        }
+      )
+      .setFooter({ 
+        text: 'The cards offer guidance, but you chart your own path. Trust your intuition.' 
+      })
 
-  // Check if the image file exists and attach it
-  if (fs.existsSync(imagePath)) {
-    embed.setImage(`attachment://${imageFilename}`)
+    if (fs.existsSync(imagePath)) {
+      console.log('Image found, attaching to embed')
+      embed.setImage(`attachment://${imageFilename}`)
+    } else {
+      console.warn('Image not found:', imagePath)
+    }
+
+    return { embed, imageFilename, imagePath }
+  } catch (error) {
+    console.error('Error creating embed:', error)
+    throw new Error('Failed to create divine embed')
   }
-
-  return { embed, imageFilename, imagePath }
 }
 
 module.exports = {
@@ -93,30 +128,66 @@ module.exports = {
     ),
 
   async execute(interaction) {
-    const question = interaction.options.getString('question')
-    const { card, isReversed } = drawCard()
-    const { embed, imageFilename, imagePath } = createDivineEmbed(card, isReversed)
-    
-    // If there's a question, add it to the embed
-    if (question) {
-      embed.addFields({ 
-        name: 'Your Question', 
-        value: question,
-        inline: false
-      })
-    }
+    try {
+      console.log('Divine command triggered by user:', interaction.user.tag)
+      
+      const question = interaction.options.getString('question')
+      if (question) {
+        console.log('Question asked:', question)
+      }
 
-    // Send the response with the image attachment if it exists
-    if (fs.existsSync(imagePath)) {
-      await interaction.reply({ 
-        embeds: [embed], 
-        files: [{
-          attachment: imagePath,
-          name: imageFilename
-        }]
-      })
-    } else {
-      await interaction.reply({ embeds: [embed] })
+      const { card, isReversed } = drawCard()
+      console.log('Processing card:', card.name)
+
+      const { embed, imageFilename, imagePath } = createDivineEmbed(card, isReversed)
+      
+      if (question) {
+        embed.addFields({ 
+          name: 'Your Question', 
+          value: question,
+          inline: false
+        })
+      }
+
+      if (fs.existsSync(imagePath)) {
+        console.log('Sending response with image')
+        await interaction.reply({ 
+          embeds: [embed], 
+          files: [{
+            attachment: imagePath,
+            name: imageFilename
+          }]
+        })
+      } else {
+        console.log('Sending response without image')
+        await interaction.reply({ embeds: [embed] })
+      }
+      
+      console.log('Divine command completed successfully')
+    } catch (error) {
+      console.error('Error executing divine command:', error)
+      console.error('Stack trace:', error.stack)
+      
+      // Create an error embed
+      const errorEmbed = new EmbedBuilder()
+        .setTitle('🔮 Error Drawing Card')
+        .setColor('#FF0000')
+        .setDescription('There was an error processing your tarot reading. Please try again later.')
+        .addFields({
+          name: 'Error Details',
+          value: 'The spirits are unclear at this moment. Please notify the server administrator.'
+        })
+
+      // Try to respond with error message
+      try {
+        if (!interaction.replied) {
+          await interaction.reply({ embeds: [errorEmbed], ephemeral: true })
+        } else {
+          await interaction.followUp({ embeds: [errorEmbed], ephemeral: true })
+        }
+      } catch (replyError) {
+        console.error('Error sending error message:', replyError)
+      }
     }
   }
 }
