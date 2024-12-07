@@ -9,6 +9,37 @@ const fs = require('fs')
 const cardDataPath = path.join(__dirname, '../../static/card-data.json')
 const cardData = JSON.parse(fs.readFileSync(cardDataPath, 'utf8'))
 
+function getImageFilename(card) {
+  if (card.type === 'major') {
+    // Handle major arcana cards
+    // Convert card number to two digits and lowercase name
+    const num = card.value_int.toString().padStart(2, '0')
+    const name = card.name.toLowerCase().replace(/\s+/g, '')
+    return `m_${num}_${name}.jpg`
+  } else {
+    // Handle minor arcana cards
+    const suitMap = {
+      cups: 'c',
+      wands: 'w',
+      swords: 's',
+      pentacles: 'p'
+    }
+    
+    const suit = suitMap[card.suit]
+    let value = card.value
+    
+    // Handle court cards and number cards
+    if (['page', 'knight', 'queen', 'king'].includes(value)) {
+      return `${suit}_${value}.jpg`
+    } else if (value === 'ace') {
+      return `${suit}_ace.jpg`
+    } else {
+      // For number cards, just use the number
+      return `${suit}_${card.value_int}.jpg`
+    }
+  }
+}
+
 function drawCard() {
   const randomIndex = crypto.randomInt(0, cardData.cards.length)
   const card = cardData.cards[randomIndex]
@@ -17,6 +48,9 @@ function drawCard() {
 }
 
 function createDivineEmbed(card, isReversed) {
+  const imageFilename = getImageFilename(card)
+  const imagePath = path.join(__dirname, '../../static/images', imageFilename)
+  
   const embed = new EmbedBuilder()
     .setTitle(`🔮 ${card.name}${isReversed ? ' (Reversed)' : ''}`)
     .setColor('#9B59B6') // Purple color for mystical feeling
@@ -39,7 +73,12 @@ function createDivineEmbed(card, isReversed) {
       text: 'The cards offer guidance, but you chart your own path. Trust your intuition.' 
     })
 
-  return embed
+  // Check if the image file exists and attach it
+  if (fs.existsSync(imagePath)) {
+    embed.setImage(`attachment://${imageFilename}`)
+  }
+
+  return { embed, imageFilename, imagePath }
 }
 
 module.exports = {
@@ -56,7 +95,7 @@ module.exports = {
   async execute(interaction) {
     const question = interaction.options.getString('question')
     const { card, isReversed } = drawCard()
-    const embed = createDivineEmbed(card, isReversed)
+    const { embed, imageFilename, imagePath } = createDivineEmbed(card, isReversed)
     
     // If there's a question, add it to the embed
     if (question) {
@@ -67,6 +106,17 @@ module.exports = {
       })
     }
 
-    await interaction.reply({ embeds: [embed] })
+    // Send the response with the image attachment if it exists
+    if (fs.existsSync(imagePath)) {
+      await interaction.reply({ 
+        embeds: [embed], 
+        files: [{
+          attachment: imagePath,
+          name: imageFilename
+        }]
+      })
+    } else {
+      await interaction.reply({ embeds: [embed] })
+    }
   }
 }
