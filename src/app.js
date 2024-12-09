@@ -1,3 +1,5 @@
+// File: src/app.js
+
 // All solutions below work with discord.js@13.7.0
 
 //#region ENVIRONMENT VARIABLES

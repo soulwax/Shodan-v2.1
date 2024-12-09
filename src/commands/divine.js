@@ -1,3 +1,5 @@
+// File: src/commands/divine.js
+
 const { SlashCommandBuilder } = require(`discord.js`)
 
 module.exports = {
