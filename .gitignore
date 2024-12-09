@@ -132,3 +132,5 @@ dist
 
 scripts/
 .project_root_tree.txts
+
+**/*.backup
