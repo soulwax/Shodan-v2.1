@@ -17,7 +17,7 @@ const { EmbedBuilder } = require(`discord.js`)
 const responseTemplates = require('./embeds') // discord embed messages
 const setServer = require('./server-setup/setup-server') // client, tracker, rest setup
 const crypto = require('crypto')
-const { createCanvas, loadImage } = require('canvas');
+const { createCanvas, loadImage } = require('canvas')
 const client = setServer.client
 const {
   joinVoiceChannel,
@@ -204,14 +204,22 @@ client.on(`interactionCreate`, async (interaction) => {
       // Get AI interpretation
       const prompt = `As a cynical, probably-possessed tarot reader who's seen too much, give an interpretation dripping with sarcasm for:
 
-      Card: ${card.name} ${isReversed ? '(Reversed, because of course it is)' : '(Upright, at least something went right)'}
-      ${question ? `Question: ${question} (wow, really going for the deep ones here)` : 'No question? Typical. Let\'s see what cosmic mess awaits...'}
+      Card: ${card.name} ${
+        isReversed
+          ? '(Reversed, because of course it is)'
+          : '(Upright, at least something went right)'
+      }
+      ${
+        question
+          ? `Question: ${question} (wow, really going for the deep ones here)`
+          : "No question? Typical. Let's see what cosmic mess awaits..."
+      }
       
       Card Description: ${card.desc}
       Traditional Meaning: ${isReversed ? card.meaning_rev : card.meaning_up}
       
       Your reading should:
-      1. Be oddly specific (unlike your average crystal-hugging fortune cookie wisdom)
+      1. Be weirdly specific (unlike ${interaction.user.username}'s life choices)
       2. Include at least one scathing comparison or metaphor that hits too close to home
       3. Give actual advice, but wrap it in layers of sarcasm
       4. Keep the mystical elements while mocking them simultaneously
@@ -316,34 +324,36 @@ client.on(`interactionCreate`, async (interaction) => {
       // Check if image exists and send response
       if (fs.existsSync(imagePath)) {
         // Load and possibly rotate the image
-        const img = await loadImage(imagePath);
-        const canvas = createCanvas(img.width, img.height);
-        const ctx = canvas.getContext('2d');
-        
+        const img = await loadImage(imagePath)
+        const canvas = createCanvas(img.width, img.height)
+        const ctx = canvas.getContext('2d')
+
         if (isReversed) {
           // Translate and rotate for reversed cards
-          ctx.translate(canvas.width/2, canvas.height/2);
-          ctx.rotate(Math.PI); // 180 degrees
-          ctx.translate(-canvas.width/2, -canvas.height/2);
+          ctx.translate(canvas.width / 2, canvas.height / 2)
+          ctx.rotate(Math.PI) // 180 degrees
+          ctx.translate(-canvas.width / 2, -canvas.height / 2)
         }
-        
+
         // Draw the image
-        ctx.drawImage(img, 0, 0);
-        
+        ctx.drawImage(img, 0, 0)
+
         // Convert canvas to buffer
-        const buffer = canvas.toBuffer('image/jpeg');
-      
+        const buffer = canvas.toBuffer('image/jpeg')
+
         console.log('[DEBUG] Image found, attaching to embed')
         await interaction.editReply({
           embeds: [embed],
-          files: [{
-            attachment: buffer,
-            name: imageFilename
-          }]
-        });
+          files: [
+            {
+              attachment: buffer,
+              name: imageFilename
+            }
+          ]
+        })
       } else {
         console.log('[DEBUG] Image not found, sending embed without image')
-        await interaction.editReply({ embeds: [embed] });
+        await interaction.editReply({ embeds: [embed] })
       }
     } catch (error) {
       console.error('[DEBUG] Error in divine command:', error)
