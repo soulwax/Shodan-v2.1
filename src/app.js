@@ -17,6 +17,7 @@ const { EmbedBuilder } = require(`discord.js`)
 const responseTemplates = require('./embeds') // discord embed messages
 const setServer = require('./server-setup/setup-server') // client, tracker, rest setup
 const crypto = require('crypto')
+const { createCanvas, loadImage } = require('canvas');
 const client = setServer.client
 const {
   joinVoiceChannel,
@@ -24,6 +25,11 @@ const {
   createAudioPlayer,
   createAudioResource
 } = require('@discordjs/voice')
+
+const OpenAI = require('openai')
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY
+})
 let globalGreetingsEmbed
 //#endregion
 const LANGUAGE_CHANNEL_ID = process.env.LANGUAGE_CHANNEL_ID
@@ -35,7 +41,6 @@ const commandFiles = fs
 
 for (const file of commandFiles) {
   const command = require(`./commands/${file}`)
-  //   console.log(command)
   commands.push(command.data.toJSON())
 }
 
@@ -58,12 +63,6 @@ function splitLongText(text, maxLength = 1024) {
   if (remainingText.length > 0) parts.push(remainingText)
   return parts
 }
-
-// At the top with other imports
-const OpenAI = require('openai')
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY
-})
 //#endregion COMMANDS
 
 ;(async () => {
@@ -250,7 +249,10 @@ Keep the response under 800 characters total.`
       let imageFilename
       if (card.type === 'major') {
         const num = card.value_int.toString().padStart(2, '0')
-        const name = card.name.toLowerCase().replace(/\s+/g, '')
+        const name = card.name
+          .toLowerCase()
+          .replace(/^the\s+/i, '') // Remove "The" from the start
+          .replace(/\s+/g, '') // Remove all spaces
         imageFilename = `${suit}_${num}_${name}.jpg`
       } else {
         if (['page', 'knight', 'queen', 'king'].includes(card.value)) {
@@ -262,7 +264,11 @@ Keep the response under 800 characters total.`
         }
       }
 
-      const imagePath = path.join(__dirname, '../static/images', imageFilename)
+      const imagePath = path.join(
+        __dirname,
+        '../static/rider-waite',
+        imageFilename
+      )
       console.log('[DEBUG] Looking for image at:', imagePath)
 
       // Split and add fields
@@ -307,19 +313,35 @@ Keep the response under 800 characters total.`
 
       // Check if image exists and send response
       if (fs.existsSync(imagePath)) {
+        // Load and possibly rotate the image
+        const img = await loadImage(imagePath);
+        const canvas = createCanvas(img.width, img.height);
+        const ctx = canvas.getContext('2d');
+        
+        if (isReversed) {
+          // Translate and rotate for reversed cards
+          ctx.translate(canvas.width/2, canvas.height/2);
+          ctx.rotate(Math.PI); // 180 degrees
+          ctx.translate(-canvas.width/2, -canvas.height/2);
+        }
+        
+        // Draw the image
+        ctx.drawImage(img, 0, 0);
+        
+        // Convert canvas to buffer
+        const buffer = canvas.toBuffer('image/jpeg');
+      
         console.log('[DEBUG] Image found, attaching to embed')
         await interaction.editReply({
           embeds: [embed],
-          files: [
-            {
-              attachment: imagePath,
-              name: imageFilename
-            }
-          ]
-        })
+          files: [{
+            attachment: buffer,
+            name: imageFilename
+          }]
+        });
       } else {
         console.log('[DEBUG] Image not found, sending embed without image')
-        await interaction.editReply({ embeds: [embed] })
+        await interaction.editReply({ embeds: [embed] });
       }
     } catch (error) {
       console.error('[DEBUG] Error in divine command:', error)
