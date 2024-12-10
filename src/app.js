@@ -202,25 +202,24 @@ client.on(`interactionCreate`, async (interaction) => {
       )
 
       // Get AI interpretation
-      const prompt = `As a sassy, slightly mischievous tarot reader with a wicked sense of humor, give a unique and memorable interpretation for:
+      const prompt = `As a cynical, probably-possessed tarot reader who's seen too much, give an interpretation dripping with sarcasm for:
 
-      Card: ${card.name} ${isReversed ? '(Reversed - and honey, that\'s tea!)' : '(Upright and serving looks!)'}
-      ${question ? `Question: ${question} (oh, you really went there...)` : 'No question? Living dangerously, I see!'}
+      Card: ${card.name} ${isReversed ? '(Reversed, because of course it is)' : '(Upright, at least something went right)'}
+      ${question ? `Question: ${question} (wow, really going for the deep ones here)` : 'No question? Typical. Let\'s see what cosmic mess awaits...'}
       
       Card Description: ${card.desc}
       Traditional Meaning: ${isReversed ? card.meaning_rev : card.meaning_up}
       
       Your reading should:
-      1. Be deliciously specific (none of that "you will meet a stranger" nonsense)
-      2. Include at least one pop culture reference, metaphor, or witty comparison
-      3. Give practical advice with a humorous twist
-      4. Keep that mystical vibe but make it fashion ✨
-      5. Be irreverent but insightful (think cosmic wisdom meets reality TV)
+      1. Be oddly specific (unlike your average crystal-hugging fortune cookie wisdom)
+      2. Include at least one scathing comparison or metaphor that hits too close to home
+      3. Give actual advice, but wrap it in layers of sarcasm
+      4. Keep the mystical elements while mocking them simultaneously
+      5. Be as subtle as a brick through a window (bonus points for painful truths)
+      6. Make it hurt a little less if it's a good card, or a little more if it's a bad one.
+      Make it memorable, make it hurt, but keep it under 800 characters - we don't have all day to unpack your cosmic baggage.
       
-      Channel your inner sassy mystic and make this reading MEMORABLE! But keep it under 800 characters - we\'re serving bite-sized wisdom here.
-      
-      Remember: Generic readings are for amateurs. Give us the tea! 🔮`
-
+      Remember: If someone wanted a generic reading, they'd ask their horoscope app. Now let's see what fresh hell the cards have prepared... 🔮`
       console.log('[DEBUG] Requesting AI interpretation')
       const completion = await openai.chat.completions.create({
         model: 'gpt-4-1106-preview',
