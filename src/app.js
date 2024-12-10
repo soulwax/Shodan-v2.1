@@ -79,7 +79,7 @@ function splitLongText(text, maxLength = 1024) {
   }
 })()
 
-// "message" event
+// \message\ event
 client.on('messageCreate', (message) => {
   // This function is executed each time your bot sees a message
   // in a server OR DM!
@@ -113,7 +113,7 @@ client.on(`interactionCreate`, async (interaction) => {
   }
 
   if (interaction.commandName === `purge`) {
-    // Get caller's permissions, he should have the "admin" role
+    // Get caller's permissions, he should have the \admin\ role
     let isAdmin = false
     let integer
     try {
@@ -202,21 +202,24 @@ client.on(`interactionCreate`, async (interaction) => {
       )
 
       // Get AI interpretation
-      const prompt = `As a mystic tarot reader, provide a brief but meaningful interpretation for:
+      const prompt = `As a sassy, slightly mischievous tarot reader with a wicked sense of humor, give a unique and memorable interpretation for:
 
-Card: ${card.name} ${isReversed ? '(Reversed)' : '(Upright)'}
-${question ? `Question: ${question}` : 'No specific question was asked.'}
-
-Card Description: ${card.desc}
-Traditional Meaning: ${isReversed ? card.meaning_rev : card.meaning_up}
-
-Please provide a concise interpretation that:
-1. Acknowledges the question (if any)
-2. Explains key symbolism
-3. Offers practical guidance
-4. Maintains a mystical tone
-
-Keep the response under 800 characters total.`
+      Card: ${card.name} ${isReversed ? '(Reversed - and honey, that\'s tea!)' : '(Upright and serving looks!)'}
+      ${question ? `Question: ${question} (oh, you really went there...)` : 'No question? Living dangerously, I see!'}
+      
+      Card Description: ${card.desc}
+      Traditional Meaning: ${isReversed ? card.meaning_rev : card.meaning_up}
+      
+      Your reading should:
+      1. Be deliciously specific (none of that "you will meet a stranger" nonsense)
+      2. Include at least one pop culture reference, metaphor, or witty comparison
+      3. Give practical advice with a humorous twist
+      4. Keep that mystical vibe but make it fashion ✨
+      5. Be irreverent but insightful (think cosmic wisdom meets reality TV)
+      
+      Channel your inner sassy mystic and make this reading MEMORABLE! But keep it under 800 characters - we\'re serving bite-sized wisdom here.
+      
+      Remember: Generic readings are for amateurs. Give us the tea! 🔮`
 
       console.log('[DEBUG] Requesting AI interpretation')
       const completion = await openai.chat.completions.create({
@@ -251,7 +254,7 @@ Keep the response under 800 characters total.`
         const num = card.value_int.toString().padStart(2, '0')
         const name = card.name
           .toLowerCase()
-          .replace(/^the\s+/i, '') // Remove "The" from the start
+          .replace(/^the\s+/i, '') // Remove \The\ from the start
           .replace(/\s+/g, '') // Remove all spaces
         imageFilename = `${suit}_${num}_${name}.jpg`
       } else {
@@ -651,7 +654,7 @@ setServer.tracker.on('guildMemberAdd', (member, type, invite) => {
     )
   } else if (type === 'permissions') {
     adminGeneral.send(
-      `I can't figure out how ${member} joined because I don't have the "Manage Server" permission. Account created: ${accountAgeString}.`
+      `I can't figure out how ${member} joined because I don't have the \Manage Server\ permission. Account created: ${accountAgeString}.`
     )
   } else if (type === 'unknown') {
     adminGeneral.send(
