@@ -40,22 +40,23 @@ for (const file of commandFiles) {
 }
 
 function splitLongText(text, maxLength = 1024) {
-  if (text.length <= maxLength) return [text];
-  
-  const parts = [];
-  let remainingText = text;
-  
+  if (text.length <= maxLength) return [text]
+
+  const parts = []
+  let remainingText = text
+
   while (remainingText.length > maxLength) {
-    let splitIndex = remainingText.lastIndexOf('.', maxLength);
-    if (splitIndex === -1) splitIndex = remainingText.lastIndexOf(' ', maxLength);
-    if (splitIndex === -1) splitIndex = maxLength;
-    
-    parts.push(remainingText.substring(0, splitIndex + 1));
-    remainingText = remainingText.substring(splitIndex + 1).trim();
+    let splitIndex = remainingText.lastIndexOf('.', maxLength)
+    if (splitIndex === -1)
+      splitIndex = remainingText.lastIndexOf(' ', maxLength)
+    if (splitIndex === -1) splitIndex = maxLength
+
+    parts.push(remainingText.substring(0, splitIndex + 1))
+    remainingText = remainingText.substring(splitIndex + 1).trim()
   }
-  
-  if (remainingText.length > 0) parts.push(remainingText);
-  return parts;
+
+  if (remainingText.length > 0) parts.push(remainingText)
+  return parts
 }
 
 // At the top with other imports
@@ -179,14 +180,14 @@ client.on(`interactionCreate`, async (interaction) => {
       // Defer reply since we'll be making API calls
       await interaction.deferReply()
       console.log('[DEBUG] Divine command triggered')
-      
+
       // First declare and initialize cardDataPath
       const cardDataPath = path.join(__dirname, '../static/card-data.json')
       console.log('[DEBUG] Loading card data from:', cardDataPath)
-      
+
       // Then use it to load the card data
       const cardData = JSON.parse(fs.readFileSync(cardDataPath, 'utf8'))
-      
+
       // Get user's question if provided
       const question = interaction.options.getString('question')
       console.log('[DEBUG] Question:', question)
@@ -195,7 +196,11 @@ client.on(`interactionCreate`, async (interaction) => {
       const randomIndex = crypto.randomInt(0, cardData.cards.length)
       const card = cardData.cards[randomIndex]
       const isReversed = crypto.randomInt(0, 2) === 1
-      console.log('[DEBUG] Drew card:', card.name, isReversed ? '(reversed)' : '(upright)')
+      console.log(
+        '[DEBUG] Drew card:',
+        card.name,
+        isReversed ? '(reversed)' : '(upright)'
+      )
 
       // Get AI interpretation
       const prompt = `As a mystic tarot reader, provide a brief but meaningful interpretation for:
@@ -231,10 +236,16 @@ Keep the response under 800 characters total.`
         .setColor('#9B59B6')
 
       // Handle image attachment
-      const suit = card.type === 'major' ? 'm' : 
-                   card.suit === 'cups' ? 'c' :
-                   card.suit === 'wands' ? 'w' :
-                   card.suit === 'swords' ? 's' : 'p'
+      const suit =
+        card.type === 'major'
+          ? 'm'
+          : card.suit === 'cups'
+          ? 'c'
+          : card.suit === 'wands'
+          ? 'w'
+          : card.suit === 'swords'
+          ? 's'
+          : 'p'
 
       let imageFilename
       if (card.type === 'major') {
@@ -265,20 +276,26 @@ Keep the response under 800 characters total.`
 
       // Add traditional meaning
       const meaning = isReversed ? card.meaning_rev : card.meaning_up
-      const meaningParts = splitLongText(meaning);
+      const meaningParts = splitLongText(meaning)
       meaningParts.forEach((part, index) => {
         embed.addFields({
-          name: index === 0 ? 'Traditional Meaning' : 'Traditional Meaning (continued)',
+          name:
+            index === 0
+              ? 'Traditional Meaning'
+              : 'Traditional Meaning (continued)',
           value: part,
           inline: false
         })
       })
 
       // Add AI interpretation
-      const aiParts = splitLongText(aiInterpretation);
+      const aiParts = splitLongText(aiInterpretation)
       aiParts.forEach((part, index) => {
         embed.addFields({
-          name: index === 0 ? 'Personalized Reading' : 'Personalized Reading (continued)',
+          name:
+            index === 0
+              ? 'Personalized Reading'
+              : 'Personalized Reading (continued)',
           value: part,
           inline: false
         })
@@ -293,21 +310,24 @@ Keep the response under 800 characters total.`
         console.log('[DEBUG] Image found, attaching to embed')
         await interaction.editReply({
           embeds: [embed],
-          files: [{
-            attachment: imagePath,
-            name: imageFilename
-          }]
+          files: [
+            {
+              attachment: imagePath,
+              name: imageFilename
+            }
+          ]
         })
       } else {
         console.log('[DEBUG] Image not found, sending embed without image')
         await interaction.editReply({ embeds: [embed] })
       }
-
     } catch (error) {
       console.error('[DEBUG] Error in divine command:', error)
       const errorEmbed = new EmbedBuilder()
         .setTitle('🔮 Error')
-        .setDescription('The spirits are unclear at this moment. Please try again later.')
+        .setDescription(
+          'The spirits are unclear at this moment. Please try again later.'
+        )
         .setColor('#FF0000')
         .addFields({
           name: 'Error Details',
