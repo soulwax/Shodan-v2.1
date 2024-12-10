@@ -35,7 +35,86 @@
 │       └── setup-server.js
 └── static
     ├── card-data.json
-    └── rider-waite
+    ├── rider-waite
+    │   ├── 0-The-Fool-Tarot-card-img-182x300-1.jpg
+    │   ├── 01-The-Magician-Tarot-card-img-182x300-1.jpg
+    │   ├── 01-ace-of-cups-tarot-card-img-182x300-1.jpg
+    │   ├── 01-ace-of-pentacles-tarot-card-img-182x300-1.jpg
+    │   ├── 01-ace-of-swords-tarot-card-img-182x300-1.jpg
+    │   ├── 01-ace-of-wands-tarot-card-img-182x300-1.jpg
+    │   ├── 02-The-High-Priestess-Tarot-card-img-182x300-1.jpg
+    │   ├── 02-two-of-cups-tarot-card-img-182x300-1.jpg
+    │   ├── 02-two-of-pentacles-tarot-card-img-182x300-1.jpg
+    │   ├── 02-two-of-swords-tarot-card-img-182x300-1.jpg
+    │   ├── 02-two-of-wands-tarot-card-img-182x300-1.jpg
+    │   ├── 03-The-Empress-Tarot-card-img-182x300-1.jpg
+    │   ├── 03-three-of-cups-tarot-card-img-182x300-1.jpg
+    │   ├── 03-three-of-pentacles-tarot-card-img-182x300-1.jpg
+    │   ├── 03-three-of-swords-tarot-card-img-182x300-1.jpg
+    │   ├── 03-three-of-wands-tarot-card-img-182x300-1.jpg
+    │   ├── 04-The-Emperor-Tarot-card-img-182x300-1.jpg
+    │   ├── 04-four-of-cups-tarot-card-img-182x300-1.jpg
+    │   ├── 04-four-of-pentacles-tarot-card-img-182x300-1.jpg
+    │   ├── 04-four-of-swords-tarot-card-img-182x300-1.jpg
+    │   ├── 04-four-of-wands-tarot-card-img-182x300-1.jpg
+    │   ├── 05-The-Hierophant-Tarot-card-img-182x300-1.jpg
+    │   ├── 05-five-of-cups-tarot-card-img-182x300-1.jpg
+    │   ├── 05-five-of-pentacles-tarot-card-img-182x300-1.jpg
+    │   ├── 05-five-of-swords-tarot-card-img-182x300-1.jpg
+    │   ├── 05-five-of-wands-tarot-card-img-182x300-1.jpg
+    │   ├── 06-The-Lovers-Tarot-card-img-182x300-1.jpg
+    │   ├── 06-six-of-cups-tarot-card-img-182x300-1.jpg
+    │   ├── 06-six-of-pentacles-tarot-card-img-182x300-1.jpg
+    │   ├── 06-six-of-swords-tarot-card-img-182x300-1.jpg
+    │   ├── 06-six-of-wands-tarot-card-img-182x300-1.jpg
+    │   ├── 07-The-Chariot-Tarot-card-img-182x300-1.jpg
+    │   ├── 07-seven-of-cups-tarot-card-img-182x300-1.jpg
+    │   ├── 07-seven-of-pentacles-tarot-card-img-182x300-1.jpg
+    │   ├── 07-seven-of-swords-tarot-card-img-182x300-1.jpg
+    │   ├── 07-seven-of-wands-tarot-card-img-182x300-1.jpg
+    │   ├── 08-Strength-Tarot-card-img-182x300-1.jpg
+    │   ├── 08-eight-of-cups-tarot-card-img-182x300-1.jpg
+    │   ├── 08-eight-of-pentacles-tarot-card-img-182x300-1.jpg
+    │   ├── 08-eight-of-swords-tarot-card-img-182x300-1.jpg
+    │   ├── 08-eight-of-wands-tarot-card-img-182x300-1.jpg
+    │   ├── 09-The-Hermit-Tarot-card-img-182x300-1.jpg
+    │   ├── 09-nine-of-cups-tarot-card-img-182x300-1.jpg
+    │   ├── 09-nine-of-pentacles-tarot-card-img-182x300-1.jpg
+    │   ├── 09-nine-of-swords-tarot-card-img-182x300-1.jpg
+    │   ├── 09-nine-of-wands-tarot-card-img-182x300-1.jpg
+    │   ├── 10-The-Wheel-of-Fortune-Tarot-card-img-182x300-1.jpg
+    │   ├── 10-page-of-wands-tarot-card-img-182x300-1.jpg
+    │   ├── 10-ten-of-cups-tarot-card-img-182x300-1.jpg
+    │   ├── 10-ten-of-pentacles-tarot-card-img-182x300-1.jpg
+    │   ├── 10-ten-of-swords-tarot-card-img-182x300-1.jpg
+    │   ├── 10-ten-of-wands-tarot-card-img-182x300-1.jpg
+    │   ├── 11-Justice-Tarot-card-img-182x300-1.jpg
+    │   ├── 11-knight-of-wands-tarot-card-img-182x300-1.jpg
+    │   ├── 11-page-of-cups-tarot-card-img-182x300-1.jpg
+    │   ├── 11-page-of-pentacles-tarot-card-img-182x300-1.jpg
+    │   ├── 11-page-of-swords-tarot-card-img-182x300-1.jpg
+    │   ├── 12-The-Hanged-Man-Tarot-card-img-182x300-1.jpg
+    │   ├── 12-knight-of-cups-tarot-card-img-182x300-1.jpg
+    │   ├── 12-knight-of-pentacles-tarot-card-img-182x300-1.jpg
+    │   ├── 12-knight-of-swords-tarot-card-img-182x300-1.jpg
+    │   ├── 12-queen-of-wands-tarot-card-img-182x300-1.jpg
+    │   ├── 13-Death-Tarot-card-img-182x300-1.jpg
+    │   ├── 13-queen-of-cups-tarot-card-img-182x300-1.jpg
+    │   ├── 13-queen-of-pentacles-tarot-card-img-182x300-1.jpg
+    │   ├── 13-queen-of-swords-tarot-card-img-182x300-1.jpg
+    │   ├── 14-Temperance-Tarot-card-img-182x300-1.jpg
+    │   ├── 14-king-of-cups-tarot-card-img-182x300-1.jpg
+    │   ├── 14-king-of-pentacles-tarot-card-img-182x300-1.jpg
+    │   ├── 14-king-of-swords-tarot-card-img-182x300-1.jpg
+    │   ├── 14-king-of-wands-tarot-card-img-182x300-1.jpg
+    │   ├── 15-The-Devil-Tarot-card-img-182x300-1.jpg
+    │   ├── 16-The-Tower-Tarot-card-img-182x300-1.jpg
+    │   ├── 17-The-Star-Tarot-card-img-182x300-1.jpg
+    │   ├── 18-The-Moon-Tarot-card-img-182x300-1.jpg
+    │   ├── 19-The-Sun-Tarot-card-img-182x300-1.jpg
+    │   ├── 20-Judgment-Tarot-card-img-182x300-1.jpg
+    │   └── 21-The-World-Tarot-card-img-182x300-1.jpg
+    └── rider-waite.backup
         ├── 0-The-Fool-Tarot-card-img-182x300-1.jpg
         ├── 0-The-Fool-Tarot-card-img-182x300-1.jpg.webp
         ├── 01-The-Magician-Tarot-card-img-182x300-1.jpg
@@ -193,4 +272,4 @@
         ├── 21-The-World-Tarot-card-img-182x300-1.jpg
         └── 21-The-World-Tarot-card-img-182x300-1.jpg.webp
 
-8 directories, 186 files
+9 directories, 264 files
