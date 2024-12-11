@@ -12,6 +12,12 @@ module.exports = {
         .setDescription('Your divination request.')
         .setRequired(false)
     )
+    .addBooleanOption((option) =>
+      option
+        .setName('wholesome')
+        .setDescription('Whether to give a wholesome reading.')
+        .setRequired(false)
+     )
     .addStringOption((option) => 
       option
         .setName('seed')

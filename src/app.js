@@ -190,8 +190,11 @@ client.on(`interactionCreate`, async (interaction) => {
       // Get user's question and seed if provided
       const question = interaction.options.getString('question')
       const seedParam = interaction.options.getString('seed')
+      const isWholesome = interaction.options.getBoolean('wholesome') ?? false
       console.log('[DEBUG] Question:', question)
       console.log('[DEBUG] Seed parameter:', seedParam)
+      console.log('[DEBUG] Wholesome mode:', isWholesome)
+      
   
       // Determine card and parameters
       let cardIndex, isReversed, temperature
@@ -212,7 +215,7 @@ client.on(`interactionCreate`, async (interaction) => {
       console.log('[DEBUG] Drew card:', card.name, isReversed ? '(reversed)' : '(upright)')
   
       // Get AI interpretation
-      const prompt = `As a cynical, probably-possessed tarot reader who's seen too much, give an interpretation dripping with sarcasm for:
+      const sarcasticPrompt = `As a cynical, probably-possessed tarot reader who's seen too much, give an interpretation dripping with sarcasm for:
   
       Card: ${card.name} ${isReversed ? '(Reversed, because of course it is)' : '(Upright, at least something went right)'}
       ${question ? `Question: ${question} (wow, really going for the deep ones here)` : "No question? Typical. Let's see what cosmic mess awaits..."}
@@ -234,6 +237,31 @@ client.on(`interactionCreate`, async (interaction) => {
       
       Remember: If someone wanted a generic reading, they'd ask their horoscope app. Now let's see what fresh hell the cards have prepared... 🔮`
   
+      const wholesomePrompt = `As a warm, supportive, and genuinely caring tarot reader who sees the best in everyone, offer gentle guidance to ${interaction.user.username}:
+
+      Card: ${card.name} ${isReversed ? '(Reversed, but remember - every shadow holds a lesson)' : '(Upright, radiating with possibility)'}
+      ${question ? `Question: "${question}" (what a thoughtful inquiry, let's explore this together)` : 'No question posed - sometimes the most profound answers come from open-hearted reflection.'}
+      
+      Card Description: ${card.desc}
+      Traditional Meaning: ${isReversed ? card.meaning_rev : card.meaning_up}
+      
+      Your reading should:
+      1. Highlight ${interaction.user.username}'s inner strength and potential
+      2. Include a nurturing metaphor that brings comfort and clarity
+      3. Offer practical, encouraging advice that empowers growth
+      4. Honor both the mystical wisdom and human experience
+      5. Find the silver lining, even in challenging cards
+      6. Share a personal observation that shows deep understanding
+      7. End with a genuinely uplifting message of hope
+      8. Channel the energy of a warm cup of tea shared between dear friends
+      
+      Keep your guidance concise but heartfelt - 800 characters of pure support and wisdom.
+      
+      Remember: Every card holds a gift of understanding, and every seeker deserves to be met with compassion. Let's discover what light the cards have to share... ✨`
+      
+      const prompt = isWholesome ? wholesomePrompt : sarcasticPrompt
+
+      
       console.log('[DEBUG] Requesting AI interpretation')
       const completion = await openai.chat.completions.create({
         model: 'gpt-4-1106-preview',
