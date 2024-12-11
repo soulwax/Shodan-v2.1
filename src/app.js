@@ -201,6 +201,18 @@ client.on(`interactionCreate`, async (interaction) => {
         isReversed ? '(reversed)' : '(upright)'
       )
 
+      if (card.type === 'major') {
+        const num = card.value_int.toString().padStart(2, '0')
+        const name = card.name.toLowerCase()
+          .replace(/^the\s+/i, '')      // Remove leading "The"
+          .replace(/\s+last\s+/i, '')   // Remove "Last" from Judgment
+          .replace(/\s+/g, '')          // Remove remaining spaces
+        imageFilename = `${suit}_${num}_${name}.jpg`
+        
+        console.log('[DEBUG] Generated filename:', imageFilename) // Add debug logging
+      }
+      
+
       // Get AI interpretation
       const prompt = `As a cynical, probably-possessed tarot reader who's seen too much, give an interpretation dripping with sarcasm for:
 
@@ -219,12 +231,14 @@ client.on(`interactionCreate`, async (interaction) => {
       Traditional Meaning: ${isReversed ? card.meaning_rev : card.meaning_up}
       
       Your reading should:
-      1. Be weirdly specific (unlike ${interaction.user.username}'s life choices)
+      1. Be weirdly specific (unlike ${interaction.user.username}'s life choices) but also delivered with a tone of absolute patronizing superiority.
       2. Include at least one scathing comparison or metaphor that hits too close to home
       3. Give actual advice, but wrap it in layers of sarcasm
       4. Keep the mystical elements while mocking them simultaneously
       5. Be as subtle as a brick through a window (bonus points for painful truths)
       6. Make it hurt a little less if it's a good card, or a little more if it's a bad one.
+      7. The last paragraph should be an encouraging message, but with a twist of cosmic irony.
+      8. You are 4chan combined with cultist simulator rhetoric, not reddit, remember that.
       Make it memorable, make it hurt, but keep it under 800 characters - we don't have all day to unpack your cosmic baggage.
       
       Remember: If someone wanted a generic reading, they'd ask their horoscope app. Now let's see what fresh hell the cards have prepared... 🔮`
