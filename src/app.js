@@ -190,7 +190,8 @@ client.on(`interactionCreate`, async (interaction) => {
       // Get user's question and seed if provided
       const question = interaction.options.getString('question')
       const seedParam = interaction.options.getString('seed')
-      const isWholesome = interaction.options.getBoolean('wholesome') ?? false
+      let isWholesome = interaction.options.getBoolean('wholesome') ?? false
+      const maxTokens = 800
       console.log('[DEBUG] Question:', question)
       console.log('[DEBUG] Seed parameter:', seedParam)
       console.log('[DEBUG] Wholesome mode:', isWholesome)
@@ -199,16 +200,18 @@ client.on(`interactionCreate`, async (interaction) => {
       // Determine card and parameters
       let cardIndex, isReversed, temperature
       if (seedParam) {
-        const [seedIndex, seedReversed, seedTemp] = seedParam.split('-')
+        const [seedIndex, seedReversed, seedTemp, seedWholesome] = seedParam.split('-')
         cardIndex = parseInt(seedIndex)
         isReversed = seedReversed === '1'
         temperature = parseFloat(seedTemp)
-        console.log('[DEBUG] Using seed values:', {cardIndex, isReversed, temperature})
+        isWholesome = seedWholesome === '1'
+        console.log('[DEBUG] Using seed values:', {cardIndex, isReversed, temperature, isWholesome})
       } else {
         cardIndex = crypto.randomInt(0, cardData.cards.length)
         isReversed = crypto.randomInt(0, 2) === 1
         temperature = 0.7
-        console.log('[DEBUG] Generated random values:', {cardIndex, isReversed, temperature})
+        isWholesome = interaction.options.getBoolean('wholesome') ?? false
+        console.log('[DEBUG] Generated random values:', {cardIndex, isReversed, temperature, isWholesome})
       }
   
       const card = cardData.cards[cardIndex]
@@ -261,13 +264,13 @@ client.on(`interactionCreate`, async (interaction) => {
       
       const prompt = isWholesome ? wholesomePrompt : sarcasticPrompt
 
-      
+
       console.log('[DEBUG] Requesting AI interpretation')
       const completion = await openai.chat.completions.create({
         model: 'gpt-4-1106-preview',
         messages: [{ role: 'user', content: prompt }],
         temperature: temperature,
-        max_tokens: 500
+        max_tokens: 800
       })
   
       const aiInterpretation = completion.choices[0].message.content.trim()
@@ -338,7 +341,7 @@ client.on(`interactionCreate`, async (interaction) => {
   
       // Set footer with seed
       embed.setFooter({
-        text: `The cards offer guidance, but you chart your own path. Trust your intuition.\nSeed: ${cardIndex}-${isReversed ? '1' : '0'}-${temperature}`
+        text: `The cards offer guidance, but you chart your own path. Trust your intuition.\n\nxSeed: ${cardIndex}-${isReversed ? '1' : '0'}-${temperature}-${isWholesome ? '1' : '0'}`
       })
   
       // Handle image processing and response
