@@ -179,53 +179,43 @@ client.on(`interactionCreate`, async (interaction) => {
       // Defer reply since we'll be making API calls
       await interaction.deferReply()
       console.log('[DEBUG] Divine command triggered')
-
+  
       // First declare and initialize cardDataPath
       const cardDataPath = path.join(__dirname, '../static/card-data.json')
       console.log('[DEBUG] Loading card data from:', cardDataPath)
-
+  
       // Then use it to load the card data
       const cardData = JSON.parse(fs.readFileSync(cardDataPath, 'utf8'))
-
-      // Get user's question if provided
+  
+      // Get user's question and seed if provided
       const question = interaction.options.getString('question')
+      const seedParam = interaction.options.getString('seed')
       console.log('[DEBUG] Question:', question)
-
-      // Draw a random card
-      const randomIndex = crypto.randomInt(0, cardData.cards.length)
-      const card = cardData.cards[randomIndex]
-      const isReversed = crypto.randomInt(0, 2) === 1
-      console.log(
-        '[DEBUG] Drew card:',
-        card.name,
-        isReversed ? '(reversed)' : '(upright)'
-      )
-
-      if (card.type === 'major') {
-        const num = card.value_int.toString().padStart(2, '0')
-        const name = card.name.toLowerCase()
-          .replace(/^the\s+/i, '')      // Remove leading "The"
-          .replace(/\s+last\s+/i, '')   // Remove "Last" from Judgment
-          .replace(/\s+/g, '')          // Remove remaining spaces
-        imageFilename = `${suit}_${num}_${name}.jpg`
-        
-        console.log('[DEBUG] Generated filename:', imageFilename) // Add debug logging
+      console.log('[DEBUG] Seed parameter:', seedParam)
+  
+      // Determine card and parameters
+      let cardIndex, isReversed, temperature
+      if (seedParam) {
+        const [seedIndex, seedReversed, seedTemp] = seedParam.split('-')
+        cardIndex = parseInt(seedIndex)
+        isReversed = seedReversed === '1'
+        temperature = parseFloat(seedTemp)
+        console.log('[DEBUG] Using seed values:', {cardIndex, isReversed, temperature})
+      } else {
+        cardIndex = crypto.randomInt(0, cardData.cards.length)
+        isReversed = crypto.randomInt(0, 2) === 1
+        temperature = 0.7
+        console.log('[DEBUG] Generated random values:', {cardIndex, isReversed, temperature})
       }
-      
-
+  
+      const card = cardData.cards[cardIndex]
+      console.log('[DEBUG] Drew card:', card.name, isReversed ? '(reversed)' : '(upright)')
+  
       // Get AI interpretation
       const prompt = `As a cynical, probably-possessed tarot reader who's seen too much, give an interpretation dripping with sarcasm for:
-
-      Card: ${card.name} ${
-        isReversed
-          ? '(Reversed, because of course it is)'
-          : '(Upright, at least something went right)'
-      }
-      ${
-        question
-          ? `Question: ${question} (wow, really going for the deep ones here)`
-          : "No question? Typical. Let's see what cosmic mess awaits..."
-      }
+  
+      Card: ${card.name} ${isReversed ? '(Reversed, because of course it is)' : '(Upright, at least something went right)'}
+      ${question ? `Question: ${question} (wow, really going for the deep ones here)` : "No question? Typical. Let's see what cosmic mess awaits..."}
       
       Card Description: ${card.desc}
       Traditional Meaning: ${isReversed ? card.meaning_rev : card.meaning_up}
@@ -239,45 +229,42 @@ client.on(`interactionCreate`, async (interaction) => {
       6. Make it hurt a little less if it's a good card, or a little more if it's a bad one.
       7. The last paragraph should be an encouraging message, but with a twist of cosmic irony.
       8. You are 4chan combined with cultist simulator rhetoric, not reddit, remember that.
+  
       Make it memorable, make it hurt, but keep it under 800 characters - we don't have all day to unpack your cosmic baggage.
       
       Remember: If someone wanted a generic reading, they'd ask their horoscope app. Now let's see what fresh hell the cards have prepared... 🔮`
+  
       console.log('[DEBUG] Requesting AI interpretation')
       const completion = await openai.chat.completions.create({
         model: 'gpt-4-1106-preview',
         messages: [{ role: 'user', content: prompt }],
-        temperature: 0.7,
+        temperature: temperature,
         max_tokens: 500
       })
-
+  
       const aiInterpretation = completion.choices[0].message.content.trim()
       console.log('[DEBUG] Received AI interpretation')
-
+  
       // Create embed
       const embed = new EmbedBuilder()
         .setTitle(`🔮 ${card.name}${isReversed ? ' (Reversed)' : ''}`)
         .setColor('#9B59B6')
-
+  
       // Handle image attachment
-      const suit =
-        card.type === 'major'
-          ? 'm'
-          : card.suit === 'cups'
-          ? 'c'
-          : card.suit === 'wands'
-          ? 'w'
-          : card.suit === 'swords'
-          ? 's'
-          : 'p'
-
+      const suit = card.type === 'major' ? 'm' : 
+                   card.suit === 'cups' ? 'c' :
+                   card.suit === 'wands' ? 'w' :
+                   card.suit === 'swords' ? 's' : 'p'
+  
       let imageFilename
       if (card.type === 'major') {
         const num = card.value_int.toString().padStart(2, '0')
-        const name = card.name
-          .toLowerCase()
-          .replace(/^the\s+/i, '') // Remove \The\ from the start
-          .replace(/\s+/g, '') // Remove all spaces
+        const name = card.name.toLowerCase()
+          .replace(/^the\s+/i, '')      // Remove leading "The"
+          .replace(/\s+last\s+/i, '')   // Remove "Last" from Judgment
+          .replace(/\s+/g, '')          // Remove remaining spaces
         imageFilename = `${suit}_${num}_${name}.jpg`
+        console.log('[DEBUG] Generated filename:', imageFilename)
       } else {
         if (['page', 'knight', 'queen', 'king'].includes(card.value)) {
           imageFilename = `${suit}_${card.value}.jpg`
@@ -287,15 +274,11 @@ client.on(`interactionCreate`, async (interaction) => {
           imageFilename = `${suit}_${card.value_int}.jpg`
         }
       }
-
-      const imagePath = path.join(
-        __dirname,
-        '../static/rider-waite',
-        imageFilename
-      )
+  
+      const imagePath = path.join(__dirname, '../static/rider-waite', imageFilename)
       console.log('[DEBUG] Looking for image at:', imagePath)
-
-      // Split and add fields
+  
+      // Add fields to embed
       if (question) {
         embed.addFields({
           name: 'Your Question',
@@ -303,85 +286,77 @@ client.on(`interactionCreate`, async (interaction) => {
           inline: false
         })
       }
-
+  
       // Add traditional meaning
       const meaning = isReversed ? card.meaning_rev : card.meaning_up
       const meaningParts = splitLongText(meaning)
       meaningParts.forEach((part, index) => {
         embed.addFields({
-          name:
-            index === 0
-              ? 'Traditional Meaning'
-              : 'Traditional Meaning (continued)',
+          name: index === 0 ? 'Traditional Meaning' : 'Traditional Meaning (continued)',
           value: part,
           inline: false
         })
       })
-
+  
       // Add AI interpretation
       const aiParts = splitLongText(aiInterpretation)
       aiParts.forEach((part, index) => {
         embed.addFields({
-          name:
-            index === 0
-              ? 'Personalized Reading'
-              : 'Personalized Reading (continued)',
+          name: index === 0 ? 'Personalized Reading' : 'Personalized Reading (continued)',
           value: part,
           inline: false
         })
       })
-
+  
+      // Set footer with seed
       embed.setFooter({
-        text: 'The cards offer guidance, but you chart your own path. Trust your intuition.'
+        text: `The cards offer guidance, but you chart your own path. Trust your intuition.\nSeed: ${cardIndex}-${isReversed ? '1' : '0'}-${temperature}`
       })
-
-      // Check if image exists and send response
+  
+      // Handle image processing and response
       if (fs.existsSync(imagePath)) {
         // Load and possibly rotate the image
         const img = await loadImage(imagePath)
         const canvas = createCanvas(img.width, img.height)
         const ctx = canvas.getContext('2d')
-
+  
         if (isReversed) {
           // Translate and rotate for reversed cards
           ctx.translate(canvas.width / 2, canvas.height / 2)
           ctx.rotate(Math.PI) // 180 degrees
           ctx.translate(-canvas.width / 2, -canvas.height / 2)
         }
-
+  
         // Draw the image
         ctx.drawImage(img, 0, 0)
-
+  
         // Convert canvas to buffer
         const buffer = canvas.toBuffer('image/jpeg')
-
+  
         console.log('[DEBUG] Image found, attaching to embed')
         await interaction.editReply({
           embeds: [embed],
-          files: [
-            {
-              attachment: buffer,
-              name: imageFilename
-            }
-          ]
+          files: [{
+            attachment: buffer,
+            name: imageFilename
+          }]
         })
       } else {
         console.log('[DEBUG] Image not found, sending embed without image')
         await interaction.editReply({ embeds: [embed] })
       }
+  
     } catch (error) {
       console.error('[DEBUG] Error in divine command:', error)
       const errorEmbed = new EmbedBuilder()
         .setTitle('🔮 Error')
-        .setDescription(
-          'The spirits are unclear at this moment. Please try again later.'
-        )
+        .setDescription('The spirits are unclear at this moment. Please try again later.')
         .setColor('#FF0000')
         .addFields({
           name: 'Error Details',
           value: 'There was an issue connecting with the mystical forces.'
         })
-
+  
       try {
         if (!interaction.deferred) {
           await interaction.reply({ embeds: [errorEmbed], ephemeral: true })
@@ -393,7 +368,6 @@ client.on(`interactionCreate`, async (interaction) => {
       }
     }
   }
-
   if (interaction.commandName === `dice`) {
     const n = interaction.options.getInteger(`n`)
     const min = interaction.options.getInteger(`min`)

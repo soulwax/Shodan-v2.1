@@ -11,5 +11,11 @@ module.exports = {
         .setName('question')
         .setDescription('Your divination request.')
         .setRequired(false)
-    ),
+    )
+    .addStringOption((option) => 
+      option
+        .setName('seed')
+        .setDescription('Seed to recreate a specific reading (format: cardIndex-reversed-temp)')
+        .setRequired(false)
+    )
 }
