@@ -179,55 +179,77 @@ client.on(`interactionCreate`, async (interaction) => {
       // Defer reply since we'll be making API calls
       await interaction.deferReply()
       console.log('[DEBUG] Divine command triggered')
-  
+
       // First declare and initialize cardDataPath
       const cardDataPath = path.join(__dirname, '../static/card-data.json')
       console.log('[DEBUG] Loading card data from:', cardDataPath)
-  
+
       // Then use it to load the card data
       const cardData = JSON.parse(fs.readFileSync(cardDataPath, 'utf8'))
-  
+
       // Get user's question and seed if provided
       const question = interaction.options.getString('question')
       const seedParam = interaction.options.getString('seed')
-      let isWholesome = interaction.options.getBoolean('wholesome') ?? false
       const maxTokens = 800
       console.log('[DEBUG] Question:', question)
       console.log('[DEBUG] Seed parameter:', seedParam)
-      console.log('[DEBUG] Wholesome mode:', isWholesome)
-      
-  
+
       // Determine card and parameters
-      let cardIndex, isReversed, temperature
+      let cardIndex, isReversed, temperature, isWholesome
       if (seedParam) {
-        const [seedIndex, seedReversed, seedTemp, seedWholesome] = seedParam.split('-')
+        const [seedIndex, seedReversed, seedTemp, seedWholesome] =
+          seedParam.split('-')
         cardIndex = parseInt(seedIndex)
         isReversed = seedReversed === '1'
         temperature = parseFloat(seedTemp)
         isWholesome = seedWholesome === '1'
-        console.log('[DEBUG] Using seed values:', {cardIndex, isReversed, temperature, isWholesome})
+        console.log('[DEBUG] Using seed values:', {
+          cardIndex,
+          isReversed,
+          temperature,
+          isWholesome
+        })
       } else {
         cardIndex = crypto.randomInt(0, cardData.cards.length)
         isReversed = crypto.randomInt(0, 2) === 1
         temperature = 0.7
         isWholesome = interaction.options.getBoolean('wholesome') ?? false
-        console.log('[DEBUG] Generated random values:', {cardIndex, isReversed, temperature, isWholesome})
+        console.log('[DEBUG] Generated random values:', {
+          cardIndex,
+          isReversed,
+          temperature,
+          isWholesome
+        })
       }
-  
+
       const card = cardData.cards[cardIndex]
-      console.log('[DEBUG] Drew card:', card.name, isReversed ? '(reversed)' : '(upright)')
-  
+      console.log(
+        '[DEBUG] Drew card:',
+        card.name,
+        isReversed ? '(reversed)' : '(upright)'
+      )
+
       // Get AI interpretation
       const sarcasticPrompt = `As a cynical, probably-possessed tarot reader who's seen too much, give an interpretation dripping with sarcasm for:
   
-      Card: ${card.name} ${isReversed ? '(Reversed, because of course it is)' : '(Upright, at least something went right)'}
-      ${question ? `Question: ${question} (wow, really going for the deep ones here)` : "No question? Typical. Let's see what cosmic mess awaits..."}
+      Card: ${card.name} ${
+        isReversed
+          ? '(Reversed, because of course it is)'
+          : '(Upright, at least something went right)'
+      }
+      ${
+        question
+          ? `Question: ${question} (wow, really going for the deep ones here)`
+          : "No question? Typical. Let's see what cosmic mess awaits..."
+      }
       
       Card Description: ${card.desc}
       Traditional Meaning: ${isReversed ? card.meaning_rev : card.meaning_up}
       
       Your reading should:
-      1. Be weirdly specific (unlike ${interaction.user.username}'s life choices) but also delivered with a tone of absolute patronizing superiority.
+      1. Be weirdly specific (unlike ${
+        interaction.user.username
+      }'s life choices) but also delivered with a tone of absolute patronizing superiority.
       2. Include at least one scathing comparison or metaphor that hits too close to home
       3. Give actual advice, but wrap it in layers of sarcasm
       4. Keep the mystical elements while mocking them simultaneously
@@ -239,11 +261,21 @@ client.on(`interactionCreate`, async (interaction) => {
       Make it memorable, make it hurt, but keep it under 800 characters - we don't have all day to unpack your cosmic baggage.
       
       Remember: If someone wanted a generic reading, they'd ask their horoscope app. Now let's see what fresh hell the cards have prepared... 🔮`
-  
-      const wholesomePrompt = `As a warm, supportive, and genuinely caring tarot reader who sees the best in everyone, offer gentle guidance to ${interaction.user.username}:
 
-      Card: ${card.name} ${isReversed ? '(Reversed, but remember - every shadow holds a lesson)' : '(Upright, radiating with possibility)'}
-      ${question ? `Question: "${question}" (what a thoughtful inquiry, let's explore this together)` : 'No question posed - sometimes the most profound answers come from open-hearted reflection.'}
+      const wholesomePrompt = `As a warm, supportive, and genuinely caring tarot reader who sees the best in everyone, offer gentle guidance to ${
+        interaction.user.username
+      }:
+
+      Card: ${card.name} ${
+        isReversed
+          ? '(Reversed, but remember - every shadow holds a lesson)'
+          : '(Upright, radiating with possibility)'
+      }
+      ${
+        question
+          ? `Question: "${question}" (what a thoughtful inquiry, let's explore this together)`
+          : 'No question posed - sometimes the most profound answers come from open-hearted reflection.'
+      }
       
       Card Description: ${card.desc}
       Traditional Meaning: ${isReversed ? card.meaning_rev : card.meaning_up}
@@ -261,9 +293,8 @@ client.on(`interactionCreate`, async (interaction) => {
       Keep your guidance concise but heartfelt - 800 characters of pure support and wisdom.
       
       Remember: Every card holds a gift of understanding, and every seeker deserves to be met with compassion. Let's discover what light the cards have to share... ✨`
-      
-      const prompt = isWholesome ? wholesomePrompt : sarcasticPrompt
 
+      const prompt = isWholesome ? wholesomePrompt : sarcasticPrompt
 
       console.log('[DEBUG] Requesting AI interpretation')
       const completion = await openai.chat.completions.create({
@@ -272,28 +303,35 @@ client.on(`interactionCreate`, async (interaction) => {
         temperature: temperature,
         max_tokens: 800
       })
-  
+
       const aiInterpretation = completion.choices[0].message.content.trim()
       console.log('[DEBUG] Received AI interpretation')
-  
+
       // Create embed
       const embed = new EmbedBuilder()
         .setTitle(`🔮 ${card.name}${isReversed ? ' (Reversed)' : ''}`)
         .setColor('#9B59B6')
-  
+
       // Handle image attachment
-      const suit = card.type === 'major' ? 'm' : 
-                   card.suit === 'cups' ? 'c' :
-                   card.suit === 'wands' ? 'w' :
-                   card.suit === 'swords' ? 's' : 'p'
-  
+      const suit =
+        card.type === 'major'
+          ? 'm'
+          : card.suit === 'cups'
+          ? 'c'
+          : card.suit === 'wands'
+          ? 'w'
+          : card.suit === 'swords'
+          ? 's'
+          : 'p'
+
       let imageFilename
       if (card.type === 'major') {
         const num = card.value_int.toString().padStart(2, '0')
-        const name = card.name.toLowerCase()
-          .replace(/^the\s+/i, '')      // Remove leading "The"
-          .replace(/\s+last\s+/i, '')   // Remove "Last" from Judgment
-          .replace(/\s+/g, '')          // Remove remaining spaces
+        const name = card.name
+          .toLowerCase()
+          .replace(/^the\s+/i, '') // Remove leading "The"
+          .replace(/\s+last\s+/i, '') // Remove "Last" from Judgment
+          .replace(/\s+/g, '') // Remove remaining spaces
         imageFilename = `${suit}_${num}_${name}.jpg`
         console.log('[DEBUG] Generated filename:', imageFilename)
       } else {
@@ -305,10 +343,14 @@ client.on(`interactionCreate`, async (interaction) => {
           imageFilename = `${suit}_${card.value_int}.jpg`
         }
       }
-  
-      const imagePath = path.join(__dirname, '../static/rider-waite', imageFilename)
+
+      const imagePath = path.join(
+        __dirname,
+        '../static/rider-waite',
+        imageFilename
+      )
       console.log('[DEBUG] Looking for image at:', imagePath)
-  
+
       // Add fields to embed
       if (question) {
         embed.addFields({
@@ -317,77 +359,88 @@ client.on(`interactionCreate`, async (interaction) => {
           inline: false
         })
       }
-  
+
       // Add traditional meaning
       const meaning = isReversed ? card.meaning_rev : card.meaning_up
       const meaningParts = splitLongText(meaning)
       meaningParts.forEach((part, index) => {
         embed.addFields({
-          name: index === 0 ? 'Traditional Meaning' : 'Traditional Meaning (continued)',
+          name:
+            index === 0
+              ? 'Traditional Meaning'
+              : 'Traditional Meaning (continued)',
           value: part,
           inline: false
         })
       })
-  
+
       // Add AI interpretation
       const aiParts = splitLongText(aiInterpretation)
       aiParts.forEach((part, index) => {
         embed.addFields({
-          name: index === 0 ? 'Personalized Reading' : 'Personalized Reading (continued)',
+          name:
+            index === 0
+              ? 'Personalized Reading'
+              : 'Personalized Reading (continued)',
           value: part,
           inline: false
         })
       })
-  
+
       // Set footer with seed
       embed.setFooter({
-        text: `The cards offer guidance, but you chart your own path. Trust your intuition.\n\nxSeed: ${cardIndex}-${isReversed ? '1' : '0'}-${temperature}-${isWholesome ? '1' : '0'}`
+        text: `The cards offer guidance, but you chart your own path. Trust your intuition.\n\nxSeed: ${cardIndex}-${
+          isReversed ? '1' : '0'
+        }-${temperature}-${isWholesome ? '1' : '0'}`
       })
-  
+
       // Handle image processing and response
       if (fs.existsSync(imagePath)) {
         // Load and possibly rotate the image
         const img = await loadImage(imagePath)
         const canvas = createCanvas(img.width, img.height)
         const ctx = canvas.getContext('2d')
-  
+
         if (isReversed) {
           // Translate and rotate for reversed cards
           ctx.translate(canvas.width / 2, canvas.height / 2)
           ctx.rotate(Math.PI) // 180 degrees
           ctx.translate(-canvas.width / 2, -canvas.height / 2)
         }
-  
+
         // Draw the image
         ctx.drawImage(img, 0, 0)
-  
+
         // Convert canvas to buffer
         const buffer = canvas.toBuffer('image/jpeg')
-  
+
         console.log('[DEBUG] Image found, attaching to embed')
         await interaction.editReply({
           embeds: [embed],
-          files: [{
-            attachment: buffer,
-            name: imageFilename
-          }]
+          files: [
+            {
+              attachment: buffer,
+              name: imageFilename
+            }
+          ]
         })
       } else {
         console.log('[DEBUG] Image not found, sending embed without image')
         await interaction.editReply({ embeds: [embed] })
       }
-  
     } catch (error) {
       console.error('[DEBUG] Error in divine command:', error)
       const errorEmbed = new EmbedBuilder()
         .setTitle('🔮 Error')
-        .setDescription('The spirits are unclear at this moment. Please try again later.')
+        .setDescription(
+          'The spirits are unclear at this moment. Please try again later.'
+        )
         .setColor('#FF0000')
         .addFields({
           name: 'Error Details',
           value: 'There was an issue connecting with the mystical forces.'
         })
-  
+
       try {
         if (!interaction.deferred) {
           await interaction.reply({ embeds: [errorEmbed], ephemeral: true })
